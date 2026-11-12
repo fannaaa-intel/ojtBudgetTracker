@@ -83,22 +83,22 @@ export default function EditFare() {
               <TextField label="Base fare (₱)" value={form.baseFareText} onChangeText={(baseFareText) => set({ baseFareText })} keyboardType="decimal-pad" error={errors.baseFareText} />
             </View>
             <View style={{ flex: 1 }}>
-              <TextField label="Covers first (km)" value={form.baseKmText} onChangeText={(baseKmText) => set({ baseKmText })} keyboardType="decimal-pad" error={errors.baseKmText} />
+              <TextField label="Covers (km)" value={form.baseKmText} onChangeText={(baseKmText) => set({ baseKmText })} keyboardType="decimal-pad" error={errors.baseKmText} />
             </View>
           </View>
           <TextField label="Each succeeding km (₱)" value={form.perKmText} onChangeText={(perKmText) => set({ perKmText })} keyboardType="decimal-pad" error={errors.perKmText} />
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             <View style={{ flex: 1 }}>
-              <TextField label="Student discount (%)" value={form.studentPctText} onChangeText={(studentPctText) => set({ studentPctText })} keyboardType="number-pad" error={errors.studentPctText} />
+              <TextField label="Student off (%)" value={form.studentPctText} onChangeText={(studentPctText) => set({ studentPctText })} keyboardType="number-pad" error={errors.studentPctText} />
             </View>
             <View style={{ flex: 1 }}>
-              <TextField label="Promo for all (%)" value={form.promoPctText} onChangeText={(promoPctText) => set({ promoPctText })} keyboardType="number-pad" error={errors.promoPctText} />
+              <TextField label="Promo off (%)" value={form.promoPctText} onChangeText={(promoPctText) => set({ promoPctText })} keyboardType="number-pad" error={errors.promoPctText} />
             </View>
           </View>
           <AppText variant="caption" tone="muted">Discounts never stack — the larger one applies. Fares round to the nearest {formatPeso(rule.roundTo)}.</AppText>
           {sample ? (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText tone="secondary">Example: {sampleKm} km{profile.user.isStudent ? ', with your discount' : ''}</AppText>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md }}>
+              <AppText tone="secondary" style={{ flex: 1 }}>Example: {sampleKm} km{profile.user.isStudent ? ', with your discount' : ''}</AppText>
               <AppText variant="amount">{formatPeso(sample.payable)}</AppText>
             </View>
           ) : null}

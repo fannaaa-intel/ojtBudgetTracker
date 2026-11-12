@@ -8,6 +8,7 @@ import { useCategoryTree } from '@/features/transactions/hooks';
 import type { BudgetPeriod } from '@/lib/budget';
 import { toCentavos } from '@/lib/money';
 import { amountToInput } from '@/lib/transactions';
+import { useLabels } from '@/store/labels';
 import { showSnack } from '@/store/snackbar';
 import { useTheme } from '@/theme';
 
@@ -19,6 +20,7 @@ export default function BudgetForm() {
   const editingId = idParam === 'new' ? undefined : Number(idParam);
   const [initial] = useState(() => (editingId != null ? getBudget(editingId) : undefined));
   const tree = useCategoryTree();
+  const { cat } = useLabels();
   const presetId = presetKey ? tree.find((c) => c.key === presetKey)?.id : undefined;
 
   const [categoryId, setCategoryId] = useState<number | null | undefined>(initial ? initial.categoryId : presetId);
@@ -69,7 +71,7 @@ export default function BudgetForm() {
         <ChipRow>
           <Chip label="All spending" selected={categoryId === null} onPress={() => (setCategoryId(null), setError(null))} />
           {tree.map((c) => (
-            <Chip key={c.id} label={c.name} selected={categoryId === c.id} onPress={() => (setCategoryId(c.id), setError(null))} />
+            <Chip key={c.id} label={cat(c.key, c.name)} selected={categoryId === c.id} onPress={() => (setCategoryId(c.id), setError(null))} />
           ))}
         </ChipRow>
         <AppText variant="caption" tone="muted">A category budget includes all its sub-categories.</AppText>

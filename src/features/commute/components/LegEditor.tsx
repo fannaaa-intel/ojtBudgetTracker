@@ -92,8 +92,8 @@ export function LegEditor({ index, total, leg, rules, isStudent, showErrors, onC
               onChange={(discountApplies) => onChange({ discountApplies })}
             />
           ) : null}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <AppText variant="caption" tone="secondary">
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.md }}>
+            <AppText variant="caption" tone="secondary" style={{ flex: 1 }}>
               {fare
                 ? fare.source === 'fixed'
                   ? 'Fixed fare'

@@ -19,7 +19,7 @@ export default function EditTransaction() {
     return (
       <Screen
         insetTop={false}
-        title="Savings transfer"
+        title={transfer.toWalletId != null ? 'Wallet transfer' : 'Savings transfer'}
         subtitle={formatDateLabel(transfer.date)}
         footer={
           <Button
@@ -34,7 +34,7 @@ export default function EditTransaction() {
         }
       >
         <AppText variant="amountLarge">{formatPeso(transfer.amount)}</AppText>
-        <AppText tone="secondary">Into {transfer.note ?? 'savings'}. Transfers are not counted as spending.</AppText>
+        <AppText tone="secondary">{transfer.note ?? 'Transfer'}. Transfers move money between your own wallets or savings and are not counted as spending.</AppText>
       </Screen>
     );
   }

@@ -45,6 +45,62 @@ export function backupFileName(today: string): string {
   return `ojt-budget-backup-${today}.json`;
 }
 
+/**
+ * Restore order: every table after the tables it references (foreign keys), so inserts never
+ * point at missing rows. Delete in the reverse order.
+ */
+export const RESTORE_ORDER = [
+  'agencies',
+  'holidays',
+  'categories',
+  'fare_rules',
+  'meal_presets',
+  'users',
+  'ojt_profile',
+  'ojt_days',
+  'wallets',
+  'income_sources',
+  'savings_goals',
+  'routes',
+  'route_legs',
+  'transactions',
+  'budgets',
+  'recurring_bills',
+  'bill_payments',
+  'roommates',
+  'bill_shares',
+  'bill_share_payments',
+  'grocery_items',
+  'restock_items',
+  'debts',
+  'barkada',
+  'barkada_members',
+  'ambagan',
+  'ambagan_shares',
+  'app_settings',
+] as const;
+
+export type BackupCheck = { ok: true; backup: Backup; rows: number } | { ok: false; error: string };
+
+/** Is this a backup this version of the app can restore? */
+export function validateBackup(raw: unknown, currentSchemaVersion: number): BackupCheck {
+  if (!raw || typeof raw !== 'object') return { ok: false, error: 'This file is not an OJT Budget backup.' };
+  const b = raw as Partial<Backup>;
+  if (b.app !== BACKUP_APP) return { ok: false, error: 'This file is not an OJT Budget backup.' };
+  if (b.format !== BACKUP_FORMAT) return { ok: false, error: 'This backup format is not supported.' };
+  if (typeof b.schemaVersion !== 'number' || b.schemaVersion > currentSchemaVersion) {
+    return { ok: false, error: 'This backup is from a newer version of the app. Update the app first.' };
+  }
+  if (!b.tables || typeof b.tables !== 'object') return { ok: false, error: 'The backup has no data.' };
+  for (const [name, rows] of Object.entries(b.tables)) {
+    if (!Array.isArray(rows) || rows.some((r) => !r || typeof r !== 'object')) return { ok: false, error: `The “${name}” data is damaged.` };
+  }
+  const users = (b.tables as Record<string, unknown[]>).users ?? [];
+  if (users.length !== 1) return { ok: false, error: 'The backup must contain exactly one registered intern.' };
+  const rows = Object.values(b.tables as Record<string, unknown[]>).reduce((s, r) => s + r.length, 0);
+  return { ok: true, backup: b as Backup, rows };
+}
+
 export function totalRows(b: Pick<Backup, 'counts'>): number {
   return Object.values(b.counts).reduce((s, n) => s + n, 0);
 }

@@ -13,7 +13,8 @@ import { fareCheckDue, lastChecked } from '@/lib/fareCheck';
 import type { FareValues } from '@/lib/fareForm';
 import { getSetting, setSetting } from '../settings/appSettings';
 import { isModeAllowed } from '@/lib/region';
-import { routeTotals, type LegValues } from '@/lib/route';
+import { legFare, routeTotals, type LegValues } from '@/lib/route';
+import { splitByBeep } from '@/lib/wallet';
 import { getProfile } from '../profile/queries';
 import { addTransaction, getCategoryIdByKey, getDefaultWalletId, notDeleted } from '../transactions/queries';
 
@@ -207,37 +208,46 @@ export function getDefaultRoute(region: Region): RouteWithLegs | undefined {
   return listRoutes(region).find((r) => r.isDefault);
 }
 
-/** How many times this route was already logged today (non-deleted). */
+/**
+ * How many times this route was already logged today (non-deleted). A log paid partly with Beep
+ * is two rows written in the same instant, so rows are counted by creation time.
+ */
 export function timesLoggedToday(routeId: number): number {
-  return (
+  return Number(
     db
-      .select({ value: count() })
+      .select({ value: sql<number>`count(distinct ${transactions.createdAt})` })
       .from(transactions)
       .where(and(eq(transactions.routeId, routeId), eq(transactions.date, todayManila()), notDeleted()))
-      .get()?.value ?? 0
+      .get()?.value ?? 0,
   );
 }
 
-/** Log a commute for today as one Pamasahe expense. Returns the transaction id and the amount saved. */
-export function logCommute(routeId: number, trip: 'round' | 'one_way'): { id: number; amount: number } {
+/**
+ * Log a commute for today as Pamasahe. With a Beep card, train/Carousel legs are paid from the card
+ * (one expense on the Beep wallet) and the rest from Cash. Returns the transaction ids and the total.
+ */
+export function logCommute(routeId: number, trip: 'round' | 'one_way', beepWalletId?: number | null): { ids: number[]; amount: number } {
   const p = getProfile();
   if (!p) throw new Error('No registered user on this phone');
   const route = getRoute(routeId, p.user.region);
   if (!route) throw new Error('Route not found');
   if (route.needsUpdate) throw new Error('This route uses fares from another region. Edit it first.');
-  const totals = totalsFor(route, p.user.isStudent);
-  const amount = trip === 'round' ? totals.roundTrip : totals.oneWay;
   const categoryId = getCategoryIdByKey('commute');
   if (categoryId == null) throw new Error('Pamasahe category is missing');
-  const id = addTransaction(p.user.id, {
-    kind: 'expense',
-    amount,
-    date: todayManila(),
-    categoryId,
-    walletId: getDefaultWalletId(),
-    routeId,
-    tags: [],
-    note: `${route.name} · ${trip === 'round' ? 'round trip' : 'one way'}`,
+  const times = trip === 'round' ? 2 : 1;
+  const parts = splitByBeep(route.legs.map((l) => ({ mode: l.rule.mode, payable: legFare(l.rule, l, p.user.isStudent).payable })));
+  const useBeep = beepWalletId != null && parts.beep > 0;
+  const label = `${route.name} · ${trip === 'round' ? 'round trip' : 'one way'}`;
+  const today = todayManila();
+  const ids: number[] = [];
+  db.transaction(() => {
+    const cash = useBeep ? parts.cash * times : (parts.cash + parts.beep) * times;
+    if (cash > 0 || !useBeep) {
+      ids.push(addTransaction(p.user.id, { kind: 'expense', amount: cash, date: today, categoryId, walletId: getDefaultWalletId(), routeId, tags: [], note: label }));
+    }
+    if (useBeep) {
+      ids.push(addTransaction(p.user.id, { kind: 'expense', amount: parts.beep * times, date: today, categoryId, walletId: beepWalletId, routeId, tags: [], note: `${label} · Beep` }));
+    }
   });
-  return { id, amount };
+  return { ids, amount: (parts.cash + parts.beep) * times };
 }

@@ -112,14 +112,14 @@ Acceptance: an intern can register, set up their route once, log a full day (com
 
 ## 6. Phase 3 — Extras and polish
 
-- [ ] Grocery list with last-price memory + price-increase note; rice/staples tracker
-- [ ] Barkada + ambagan / group gala split + utang tracker — **only when barkada.region = user.region** (hidden for LGU Talisay)
-- [ ] Beep card wallet; route compare (cost vs minutes)
-- [ ] "Total OJT cost" report → CSV / PDF (`expo-print`)
-- [ ] Backup import / restore
-- [ ] PIN / fingerprint lock (`expo-local-authentication`)
-- [ ] Taglish label toggle
-- [ ] Test on a Metro Manila profile and the Talisay (Bicol) profile, including a fare-hike update
+- [x] Grocery list with last-price memory + price-increase note; rice/staples tracker
+- [x] Barkada + ambagan / group gala split + utang tracker — **only when barkada.region = user.region** (hidden for LGU Talisay)
+- [x] Beep card wallet; route compare (cost vs minutes)
+- [x] "Total OJT cost" report → CSV / PDF (`expo-print`)
+- [x] Backup import / restore
+- [x] PIN / fingerprint lock (`expo-local-authentication`)
+- [x] Taglish label toggle
+- [ ] Test on a Metro Manila profile and the Talisay (Bicol) profile, including a fare-hike update — automated scenarios ✅ (`__tests__/scenarios.test.ts`), Settings → Erase all data ✅; **phone run pending: `docs/TEST_PLAN.md`**
 
 ---
 

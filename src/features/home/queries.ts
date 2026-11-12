@@ -7,7 +7,7 @@ export type DaySummary = {
   today: ISODate;
   spentToday: number;
   /** Today's spending per top-level category, largest first, zeros left out. */
-  byCategory: { name: string; amount: number }[];
+  byCategory: { key: string; name: string; amount: number }[];
   spentThisMonth: number;
   incomeThisMonth: number;
 };
@@ -15,7 +15,7 @@ export type DaySummary = {
 export function getDaySummary(today: ISODate = todayManila()): DaySummary {
   const month = periodRange('monthly', today);
   const byCategory = getCategoryTree()
-    .map((p) => ({ name: p.name, amount: sumAmount('expense', today, today, categoryFamilyIds(p.id)) }))
+    .map((p) => ({ key: p.key, name: p.name, amount: sumAmount('expense', today, today, categoryFamilyIds(p.id)) }))
     .filter((c) => c.amount > 0)
     .sort((a, b) => b.amount - a.amount);
   return {

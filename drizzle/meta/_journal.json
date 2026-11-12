@@ -50,6 +50,27 @@
       "when": 1794462508090,
       "tag": "0006_modern_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794463446927,
+      "tag": "0007_jittery_vargas",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1794463618019,
+      "tag": "0008_serious_ken_ellis",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794463829447,
+      "tag": "0009_parched_lifeguard",
+      "breakpoints": true
     }
   ]
 }

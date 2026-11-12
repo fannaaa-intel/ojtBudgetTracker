@@ -10,11 +10,11 @@ import { TABLE_NAMES } from '@/db/tables';
 import { backupFileName, buildBackup, totalRows } from '@/lib/backup';
 import { todayManila } from '@/lib/dates';
 
-function readAllTables(): Record<string, unknown[]> {
+export function readAllTables(): Record<string, unknown[]> {
   return Object.fromEntries(TABLE_NAMES.map((name) => [name, expoDb.getAllSync(`SELECT * FROM "${name}"`)]));
 }
 
-function appliedMigrations(): number {
+export function appliedMigrations(): number {
   try {
     return expoDb.getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM __drizzle_migrations')?.n ?? 0;
   } catch {
@@ -30,7 +30,7 @@ export async function exportBackup(): Promise<{ fileName: string; rows: number }
   const file = new File(Paths.cache, fileName);
   if (file.exists) file.delete();
   file.create();
-  file.write(JSON.stringify(backup, null, 2));
+  file.writeSync(JSON.stringify(backup, null, 2)); // finish writing before the share sheet opens
 
   if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing is not available on this phone');
   await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: 'Save or send your backup', UTI: 'public.json' });

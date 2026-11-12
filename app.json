@@ -27,6 +27,7 @@
       "expo-status-bar",
       "@react-native-community/datetimepicker",
       "expo-system-ui",
+      ["expo-local-authentication", { "faceIDPermission": "Unlock OJT Budget with Face ID." }],
       [
         "expo-splash-screen",
         {

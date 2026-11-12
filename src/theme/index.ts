@@ -55,16 +55,20 @@ export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as cons
 export const radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
 export const hairline = 1;
 
+/**
+ * Every style has an explicit lineHeight (~1.3–1.45× the size) so wrapped text breathes
+ * instead of stacking tight on small screens.
+ */
 export const typography = {
-  display: { fontSize: 32, fontWeight: '700' as const, letterSpacing: -0.5 },
-  title: { fontSize: 22, fontWeight: '600' as const, letterSpacing: -0.3 },
-  heading: { fontSize: 17, fontWeight: '600' as const },
-  body: { fontSize: 15, fontWeight: '400' as const },
-  caption: { fontSize: 13, fontWeight: '400' as const },
-  label: { fontSize: 11, fontWeight: '600' as const, letterSpacing: 1, textTransform: 'uppercase' as const },
+  display: { fontSize: 32, lineHeight: 40, fontWeight: '700' as const, letterSpacing: -0.5 },
+  title: { fontSize: 22, lineHeight: 29, fontWeight: '600' as const, letterSpacing: -0.3 },
+  heading: { fontSize: 17, lineHeight: 23, fontWeight: '600' as const },
+  body: { fontSize: 15, lineHeight: 22, fontWeight: '400' as const },
+  caption: { fontSize: 13, lineHeight: 19, fontWeight: '400' as const },
+  label: { fontSize: 11, lineHeight: 16, fontWeight: '600' as const, letterSpacing: 0.8, textTransform: 'uppercase' as const },
   /** Amounts: tabular digits so columns of pesos line up. */
-  amount: { fontSize: 17, fontWeight: '600' as const, fontVariant: ['tabular-nums' as const] },
-  amountLarge: { fontSize: 36, fontWeight: '700' as const, letterSpacing: -0.5, fontVariant: ['tabular-nums' as const] },
+  amount: { fontSize: 17, lineHeight: 23, fontWeight: '600' as const, fontVariant: ['tabular-nums' as const] },
+  amountLarge: { fontSize: 36, lineHeight: 44, fontWeight: '700' as const, letterSpacing: -0.5, fontVariant: ['tabular-nums' as const] },
 };
 
 export type TypographyVariant = keyof typeof typography;

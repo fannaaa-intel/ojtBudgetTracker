@@ -52,8 +52,8 @@ export default function Savings() {
             onPress={() => router.push({ pathname: '/savings/[id]', params: { id: String(goal.id) } })}
             style={({ pressed }) => ({ borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, opacity: pressed ? 0.7 : 1 })}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-              <AppText variant="heading" style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm }}>
+              <AppText variant="heading" style={{ flexGrow: 1, flexShrink: 1 }}>
                 {goal.name}
               </AppText>
               {goal.isEmergencyFund ? <Chip label="Emergency" status="plain" /> : null}

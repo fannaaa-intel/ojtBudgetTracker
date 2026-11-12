@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { AppText, BarChart, Chip, ChipRow, HBarRow, ListRow, Screen, Section } from '@/components';
+import { ExportRows } from '@/features/export/ExportRows';
 import { useReport } from '@/features/reports/queries';
 import { formatDateLabel } from '@/lib/dates';
 import { formatPeso } from '@/lib/money';
 import { barFractions, highlightIndex, REPORT_PERIOD_LABEL, type ReportPeriod } from '@/lib/reports';
+import { useLabels } from '@/store/labels';
 import { useTheme } from '@/theme';
 
 const PERIODS: ReportPeriod[] = ['week', 'month', 'ojt'];
@@ -14,6 +16,7 @@ export default function Reports() {
   const { colors, radius, spacing } = useTheme();
   const [period, setPeriod] = useState<ReportPeriod>('month');
   const r = useReport(period);
+  const { cat, w } = useLabels();
   const catFractions = barFractions(r.categories.map((c) => c.amount));
   const top = r.series[highlightIndex(r.series.map((p) => p.amount))];
 
@@ -54,17 +57,20 @@ export default function Reports() {
         <Section title="By category">
           <View style={{ paddingVertical: spacing.md, gap: spacing.xs }}>
             {r.categories.map((c, i) => (
-              <HBarRow key={c.key} name={c.name} value={formatPeso(c.amount)} pct={c.pct} fraction={catFractions[i]} strong={i === 0} />
+              <HBarRow key={c.key} name={cat(c.key, c.name)} value={formatPeso(c.amount)} pct={c.pct} fraction={catFractions[i]} strong={i === 0} />
             ))}
           </View>
         </Section>
       ) : null}
 
-      <Section title="Needs vs gala">
-        <ListRow title="Needs" subtitle="Pamasahe, Pagkain, bills, essentials" value={formatPeso(r.needs)} />
-        <ListRow title="Gala" subtitle="Outings, gifts and events" value={formatPeso(r.gala)} last />
+      <Section title={`Needs vs ${w('gala', true)}`}>
+        <ListRow title="Needs" subtitle={`${w('pamasahe')}, ${w('pagkain', true)}, bills, essentials`} value={formatPeso(r.needs)} />
+        <ListRow title={w('gala')} subtitle="Outings, gifts and events" value={formatPeso(r.gala)} last />
       </Section>
       <AppText variant="caption" tone="muted">Savings transfers are not spending and are not shown here.</AppText>
+      <Section title="Export">
+        <ExportRows />
+      </Section>
     </Screen>
   );
 }

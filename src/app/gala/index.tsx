@@ -11,8 +11,10 @@ import { softDeleteTransaction } from '@/features/transactions/queries';
 import { todayManila } from '@/lib/dates';
 import { checkAgainstAllowance, galaNote, galaTotal } from '@/lib/gala';
 import { formatPeso, toCentavos } from '@/lib/money';
+import { featuresFor } from '@/lib/region';
 import { amountToInput } from '@/lib/transactions';
 import { showSnack } from '@/store/snackbar';
+import { useLabels } from '@/store/labels';
 import { useTheme } from '@/theme';
 
 /** Solo gala: weekly allowance + planner (fare from your fare table + food + activity). */
@@ -20,6 +22,7 @@ export default function Gala() {
   const { spacing } = useTheme();
   const profile = useProfile();
   const allowance = useGalaAllowance();
+  const { w } = useLabels();
   const presets = useMealPresets(profile?.user.region).filter((p) => p.price > 0);
   const [place, setPlace] = useState('');
   const [date, setDate] = useState(todayManila());
@@ -48,7 +51,7 @@ export default function Gala() {
   return (
     <Screen
       insetTop={false}
-      title="Gala"
+      title={w('gala')}
       subtitle="Plan an outing and see if it fits this week’s allowance."
       footer={
         <View style={{ gap: spacing.sm }}>
@@ -100,6 +103,9 @@ export default function Gala() {
       </View>
       <TextField label="Activity (₱)" value={activityText} onChangeText={setActivityText} keyboardType="decimal-pad" placeholder="Movie, entrance, games…" />
       <AppText variant="caption" tone="muted">Logged as one Gala → Outings expense with the breakdown in the note.</AppText>
+      {featuresFor(profile.user.region).barkada ? (
+        <Button label="Going as a group? Split it with your barkada" variant="ghost" onPress={() => router.push('/barkada')} />
+      ) : null}
     </Screen>
   );
 }

@@ -6,12 +6,14 @@ import { SafeToSpendCard } from '@/features/budgets/components/SafeToSpendCard';
 import { useBudgetProgress } from '@/features/budgets/queries';
 import { useGoals } from '@/features/savings/queries';
 import { formatDateLabel } from '@/lib/dates';
+import { useLabels } from '@/store/labels';
 
 export default function Budget() {
   const progress = useBudgetProgress();
   const weekly = progress.filter((p) => p.budget.period === 'weekly');
   const monthly = progress.filter((p) => p.budget.period === 'monthly');
   const goals = useGoals();
+  const { w } = useLabels();
 
   return (
     <Screen title="Budget" subtitle="Envelopes per category. Weeks run Monday to Sunday.">
@@ -30,11 +32,11 @@ export default function Budget() {
           ))}
         </Section>
       ) : null}
-      {progress.length === 0 ? <AppText tone="secondary">No budgets yet. Start with a weekly Pagkain or Pamasahe envelope.</AppText> : null}
+      {progress.length === 0 ? <AppText tone="secondary">No budgets yet. Start with a weekly {w('pagkain')} or {w('pamasahe')} envelope.</AppText> : null}
       <Button label="Add budget" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: 'new' } })} />
       <BillsSummary />
-      <Section title="Gala & savings">
-        <ListRow title="Gala planner" subtitle="Weekly allowance · plan fare, food and activity" onPress={() => router.push('/gala')} />
+      <Section title={`${w('gala')} & savings`}>
+        <ListRow title={`${w('gala')} planner`} subtitle="Weekly allowance · plan fare, food and activity" onPress={() => router.push('/gala')} />
         <ListRow
           title="Savings & emergency fund"
           subtitle={goals.length ? goals.map((g) => `${g.goal.name} ${g.pct}%`).join(' · ') : 'Goals and a 1-month emergency fund'}

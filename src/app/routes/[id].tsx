@@ -118,7 +118,7 @@ export default function RouteEditor() {
       subtitle="Add each ride in order. Fares come from your fare table."
       footer={
         <View style={{ gap: spacing.sm }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: spacing.md }}>
             <AppText tone="secondary">One way {formatPeso(totals.oneWay)}</AppText>
             <AppText variant="amount">Round trip {formatPeso(totals.roundTrip)}</AppText>
           </View>

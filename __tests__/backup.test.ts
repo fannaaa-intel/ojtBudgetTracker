@@ -1,5 +1,8 @@
+import { getTableName } from 'drizzle-orm';
+import { getTableConfig, SQLiteTable } from 'drizzle-orm/sqlite-core';
+import * as schema from '../src/db/schema';
 import { TABLE_NAMES } from '../src/db/tables';
-import { backupFileName, buildBackup, totalRows } from '../src/lib/backup';
+import { backupFileName, buildBackup, RESTORE_ORDER, totalRows, validateBackup } from '../src/lib/backup';
 
 const allTableNames = TABLE_NAMES;
 
@@ -22,6 +25,33 @@ describe('backup', () => {
     expect(back.tables.transactions[0].amount).toBe(1125);
     expect(Number.isInteger(back.tables.transactions[0].amount)).toBe(true);
     expect(back).toMatchObject({ app: 'ojt-budget-tracker', format: 1, schemaVersion: 3, exportedAt: '2026-11-12T04:30:00.000Z', exportedOn: '2026-11-12' });
+  });
+
+  it('restore order covers every table exactly once', () => {
+    expect([...RESTORE_ORDER].sort()).toEqual([...allTableNames].sort());
+  });
+
+  it('restore order puts every table after the tables its foreign keys point to', () => {
+    const pos = new Map(RESTORE_ORDER.map((n, i) => [n as string, i]));
+    for (const v of Object.values(schema) as unknown[]) {
+      if (!(v instanceof SQLiteTable)) continue;
+      const cfg = getTableConfig(v);
+      for (const fk of cfg.foreignKeys) {
+        const target = getTableName(fk.reference().foreignTable);
+        if (target === cfg.name) continue;
+        expect([cfg.name, pos.get(cfg.name)! > pos.get(target)!]).toEqual([cfg.name, true]);
+      }
+    }
+  });
+
+  it('validates backups before restoring', () => {
+    const good = buildBackup({ users: [{ id: 1 }], transactions: [] }, { schemaVersion: 9, now, today: '2026-11-12' });
+    expect(validateBackup(good, 10)).toMatchObject({ ok: true, rows: 1 });
+    expect(validateBackup(good, 8)).toMatchObject({ ok: false, error: expect.stringMatching(/newer version/) });
+    expect(validateBackup({ app: 'other' }, 10).ok).toBe(false);
+    expect(validateBackup(null, 10).ok).toBe(false);
+    expect(validateBackup({ ...good, tables: { users: [] } }, 10).ok).toBe(false);
+    expect(validateBackup({ ...good, tables: { users: [{ id: 1 }], transactions: 'x' } }, 10).ok).toBe(false);
   });
 
   it('counts rows and names the file by date', () => {

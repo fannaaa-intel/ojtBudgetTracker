@@ -18,7 +18,7 @@ type Props = {
 export function Screen({ title, subtitle, children, scroll = true, footer, insetTop = true }: Props) {
   const { colors, spacing } = useTheme();
   const body = (
-    <View style={{ padding: spacing.lg, gap: spacing.lg }}>
+    <View style={{ padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.xl }}>
       {title ? (
         <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
           <AppText variant="title">{title}</AppText>

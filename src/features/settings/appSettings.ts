@@ -9,7 +9,10 @@ export type SettingKey =
   | 'electricity_rate' // centavos per kWh
   | 'fares_checked_on' // YYYY-MM-DD
   | 'reminders' // JSON ReminderPrefs (see lib/reminders)
-  | 'budget_alerts_sent'; // JSON { "<budgetId>:<periodStart>": "near" | "over" }
+  | 'budget_alerts_sent' // JSON { "<budgetId>:<periodStart>": "near" | "over" }
+  | 'lock_biometric' // '1' = fingerprint / Face ID unlock on
+  | 'pin_failures' // JSON { n: number, at: epoch ms }
+  | 'labels'; // 'taglish' | 'english'
 
 export function getSetting(key: SettingKey): string | null {
   return db.select().from(appSettings).where(eq(appSettings.key, key)).get()?.value ?? null;

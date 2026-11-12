@@ -161,6 +161,7 @@ export const transactions = sqliteTable(
     routeId: integer('route_id').references(() => routes.id),
     incomeSourceId: integer('income_source_id').references(() => incomeSources.id), // income only
     savingsGoalId: integer('savings_goal_id').references(() => savingsGoals.id), // transfer into a goal
+    toWalletId: integer('to_wallet_id').references(() => wallets.id), // transfer between wallets (Beep top-up)
     tags: text('tags'), // comma-separated: late,rainy,baon
     note: text('note'),
     isOneTime: bool('is_one_time').notNull().default(false),
@@ -259,6 +260,16 @@ export const groceryItems = sqliteTable('grocery_items', {
   unit: text('unit'),
   lastPrice: integer('last_price'),
   updatedAt: text('updated_at'),
+  /** Price paid the time before lastPrice (for "₱5 more than last time"). */
+  prevPrice: integer('prev_price'),
+  onList: bool('on_list').notNull().default(false),
+  /** Ticked in the cart during a shopping trip, with the price typed in the store. */
+  inCart: bool('in_cart').notNull().default(false),
+  cartPrice: integer('cart_price'),
+  /** Staples (rice, oil, eggs) get a "runs out in N days" countdown. */
+  isStaple: bool('is_staple').notNull().default(false),
+  lastsDays: integer('lasts_days'),
+  lastBought: text('last_bought'),
 });
 
 export const restockItems = sqliteTable('restock_items', {
@@ -290,6 +301,8 @@ export const debts = sqliteTable('debts', {
   direction: text('direction', { enum: ['owed_to_me', 'i_owe'] }).notNull(),
   note: text('note'),
   settledAt: text('settled_at'),
+  /** Set when this debt was created by an ambagan someone else paid for. */
+  ambaganId: integer('ambagan_id'),
   ...timestamps,
 });
 
@@ -320,6 +333,11 @@ export const ambagan = sqliteTable('ambagan', {
   date: text('date').notNull(),
   total: integer('total').notNull(),
   splitMode: text('split_mode', { enum: ['equal', 'custom'] }).notNull().default('equal'),
+  kind: text('kind', { enum: ['gala', 'party', 'gift', 'other'] }).notNull().default('gala'),
+  /** 'me' or the member name who paid the whole amount. */
+  paidBy: text('paid_by').notNull().default('me'),
+  /** My share, logged as an expense. */
+  transactionId: integer('transaction_id').references(() => transactions.id),
 });
 
 export const ambaganShares = sqliteTable(

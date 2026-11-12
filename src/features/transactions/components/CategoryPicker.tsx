@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppText, Chip, ChipRow } from '@/components';
+import { useLabels } from '@/store/labels';
 import { useTheme } from '@/theme';
 import { useCategoryTree } from '../hooks';
 
@@ -12,6 +13,7 @@ type Props = { value: number | null; onChange: (id: number) => void; error?: str
  */
 export function CategoryPicker({ value, onChange, error }: Props) {
   const { spacing } = useTheme();
+  const { cat } = useLabels();
   const tree = useCategoryTree();
   const owner = tree.find((p) => p.id === value || p.children.some((c) => c.id === value));
   const [openId, setOpenId] = useState<number | null>(owner?.id ?? null);
@@ -30,7 +32,7 @@ export function CategoryPicker({ value, onChange, error }: Props) {
         {tree.map((p) => (
           <Chip
             key={p.id}
-            label={p.name}
+            label={cat(p.key, p.name)}
             selected={owner?.id === p.id}
             onPress={() => {
               setOpenId(p.id);
@@ -42,11 +44,11 @@ export function CategoryPicker({ value, onChange, error }: Props) {
       {open && open.children.length > 0 ? (
         <View style={{ gap: spacing.sm, marginTop: spacing.xs }}>
           <AppText variant="caption" tone="muted">
-            {open.name} — pick one (optional)
+            {cat(open.key, open.name)} — pick one (optional)
           </AppText>
           <ChipRow>
             {open.children.map((c) => (
-              <Chip key={c.id} label={c.name} selected={value === c.id} onPress={() => onChange(value === c.id ? open.id : c.id)} />
+              <Chip key={c.id} label={cat(c.key, c.name)} selected={value === c.id} onPress={() => onChange(value === c.id ? open.id : c.id)} />
             ))}
           </ChipRow>
         </View>

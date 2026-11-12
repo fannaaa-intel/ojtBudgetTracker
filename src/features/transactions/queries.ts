@@ -102,7 +102,9 @@ export type TxListItem = {
   note: string | null;
   routeId: number | null;
   categoryName: string | null;
+  categoryKey: string | null;
   parentName: string | null;
+  parentKey: string | null;
   sourceName: string | null;
 };
 
@@ -117,7 +119,9 @@ export function listTransactions(opts: { limit?: number; date?: string } = {}): 
       note: transactions.note,
       routeId: transactions.routeId,
       categoryName: categories.name,
+      categoryKey: categories.key,
       parentName: parentCat.name,
+      parentKey: parentCat.key,
       sourceName: incomeSources.name,
     })
     .from(transactions)

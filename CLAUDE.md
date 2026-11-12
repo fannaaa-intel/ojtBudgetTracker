@@ -1,6 +1,6 @@
 # CLAUDE.md — rules for this repo
 
-Read `plan.md` first: it holds the decisions, phases and checklist. Work one checklist item at a time and tick it in plan.md when done.
+Read `plan.md` first: it holds the decisions, phases and checklist. Then read `docs/HANDOFF.md`: current status, the owner's report → GO → build → report workflow, and gotchas (typed routes, migrations, bundle check). Work one checklist item at a time and tick it in plan.md when done. `/go` (or "GO") is the owner's approval for the next pending step.
 
 ## Stack
 Expo (React Native) + Expo Router (`src/app`) · expo-sqlite + Drizzle ORM · Zustand · TypeScript strict · Jest (jest-expo). Path alias `@/` = `src/`.

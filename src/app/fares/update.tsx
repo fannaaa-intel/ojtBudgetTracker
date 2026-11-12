@@ -65,16 +65,16 @@ export default function UpdateFares() {
         const f = formOf(r);
         return (
           <Section key={r.id} title={r.label}>
-            <View style={{ flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.md }}>
-              <View style={{ flex: 1 }}>
-                <TextField label="Base (₱)" value={f.baseFareText} onChangeText={(baseFareText) => set(r, { baseFareText })} keyboardType="decimal-pad" />
+            <View style={{ gap: spacing.md, paddingVertical: spacing.md }}>
+              <View style={{ flexDirection: 'row', gap: spacing.md }}>
+                <View style={{ flex: 1 }}>
+                  <TextField label="Base fare (₱)" value={f.baseFareText} onChangeText={(baseFareText) => set(r, { baseFareText })} keyboardType="decimal-pad" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <TextField label="Covers (km)" value={f.baseKmText} onChangeText={(baseKmText) => set(r, { baseKmText })} keyboardType="decimal-pad" />
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <TextField label="First km" value={f.baseKmText} onChangeText={(baseKmText) => set(r, { baseKmText })} keyboardType="decimal-pad" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <TextField label="Per km (₱)" value={f.perKmText} onChangeText={(perKmText) => set(r, { perKmText })} keyboardType="decimal-pad" />
-              </View>
+              <TextField label="Each extra km (₱)" value={f.perKmText} onChangeText={(perKmText) => set(r, { perKmText })} keyboardType="decimal-pad" />
             </View>
           </Section>
         );
