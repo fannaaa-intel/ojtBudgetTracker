@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `theme_pref` text DEFAULT 'system' NOT NULL;

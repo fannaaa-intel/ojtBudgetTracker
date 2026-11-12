@@ -1,0 +1,1 @@
+ALTER TABLE `transactions` ADD `income_source_id` integer REFERENCES income_sources(id);

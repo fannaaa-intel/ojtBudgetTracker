@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1794453445345,
+      "tag": "0000_right_gargoyle",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794457249693,
+      "tag": "0001_handy_mole_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794457753212,
+      "tag": "0002_little_squadron_supreme",
+      "breakpoints": true
+    }
+  ]
+}
