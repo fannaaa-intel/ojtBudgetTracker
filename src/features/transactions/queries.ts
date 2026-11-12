@@ -18,6 +18,8 @@ export type TxInput = {
   routeId?: number | null;
   /** Income only: which allowance / pay source this came from. */
   incomeSourceId?: number | null;
+  /** One-time purchase (OJT requirements etc.): counted in totals, left out of daily averages. */
+  isOneTime?: boolean;
   tags: string[];
   note: string | null;
 };
@@ -33,6 +35,7 @@ function toRow(i: TxInput) {
     walletId: i.walletId,
     routeId: i.routeId ?? null,
     incomeSourceId: i.kind === 'income' ? (i.incomeSourceId ?? null) : null,
+    isOneTime: i.kind === 'expense' ? (i.isOneTime ?? false) : false,
     tags: serializeTags(i.tags),
     note: i.note?.trim() || null,
   };
@@ -57,14 +60,23 @@ export function restoreTransaction(id: number): void {
   db.update(transactions).set({ deletedAt: null }).where(eq(transactions.id, id)).run();
 }
 
-/** One live (non-deleted) transaction as form input, or undefined. */
+/** A live transfer (money into savings) — shown read-only, never edited as an expense. */
+export function getTransfer(id: number) {
+  return db
+    .select()
+    .from(transactions)
+    .where(and(eq(transactions.id, id), eq(transactions.kind, 'transfer'), notDeleted()))
+    .get();
+}
+
+/** One live (non-deleted) expense or income as form input, or undefined (transfers excluded). */
 export function getTransactionInput(id: number): TxInput | undefined {
   const r = db
     .select()
     .from(transactions)
     .where(and(eq(transactions.id, id), notDeleted()))
     .get();
-  if (!r) return undefined;
+  if (!r || r.kind === 'transfer') return undefined;
   return {
     kind: r.kind === 'income' ? 'income' : 'expense',
     amount: r.amount,
@@ -73,6 +85,7 @@ export function getTransactionInput(id: number): TxInput | undefined {
     walletId: r.walletId,
     routeId: r.routeId,
     incomeSourceId: r.incomeSourceId,
+    isOneTime: r.isOneTime,
     tags: parseTags(r.tags),
     note: r.note,
   };
@@ -132,6 +145,16 @@ export function sumAmount(kind: TxKind, from: string, to: string, categoryIds?: 
         categoryIds ? inArray(transactions.categoryId, categoryIds) : undefined,
       ),
     )
+    .get();
+  return Number(row?.total ?? 0);
+}
+
+/** Sum of non-deleted one-time expenses (OJT requirements etc.) in [from, to]. */
+export function sumOneTime(from: string, to: string): number {
+  const row = db
+    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .from(transactions)
+    .where(and(notDeleted(), eq(transactions.kind, 'expense'), eq(transactions.isOneTime, true), gte(transactions.date, from), lte(transactions.date, to)))
     .get();
   return Number(row?.total ?? 0);
 }

@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import { Button, DateField, Screen, TextField } from '@/components';
-import { useTheme } from '@/theme';
-import { IncomeSourcePicker } from '../../income/components/IncomeSourcePicker';
+import { Button, DateField, Screen, TextField, ToggleRow } from '@/components';
 import { todayManila } from '@/lib/dates';
 import { amountToInput, validateTxDraft, type TxErrors, type TxKind } from '@/lib/transactions';
-import { useWallets } from '../hooks';
+import { useTheme } from '@/theme';
+import { IncomeSourcePicker } from '../../income/components/IncomeSourcePicker';
+import { useCategoryTree, useWallets } from '../hooks';
 import type { TxInput } from '../queries';
 import { CategoryPicker } from './CategoryPicker';
 import { TagPicker } from './TagPicker';
@@ -26,12 +26,14 @@ type Props = {
 export function TransactionForm({ title, kind, initial, submitLabel, onSubmit, onDelete, extra }: Props) {
   const { typography } = useTheme();
   const wallets = useWallets();
+  const categoryTree = useCategoryTree();
   const [amountText, setAmountText] = useState(initial ? amountToInput(initial.amount) : '');
   const [date, setDate] = useState(initial?.date ?? todayManila());
   const [categoryId, setCategoryId] = useState<number | null>(initial?.categoryId ?? null);
   const [walletId, setWalletId] = useState<number | null>(initial?.walletId ?? wallets[0]?.id ?? null);
   const [incomeSourceId, setIncomeSourceId] = useState<number | null>(initial?.incomeSourceId ?? null);
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [isOneTime, setIsOneTime] = useState(initial?.isOneTime ?? false);
   const [note, setNote] = useState(initial?.note ?? '');
   const [errors, setErrors] = useState<TxErrors>({});
 
@@ -49,6 +51,7 @@ export function TransactionForm({ title, kind, initial, submitLabel, onSubmit, o
       walletId,
       routeId: initial?.routeId ?? null,
       incomeSourceId: kind === 'income' ? incomeSourceId : null,
+      isOneTime: kind === 'expense' && isOneTime,
       tags,
       note: note.trim() || null,
     });
@@ -83,6 +86,21 @@ export function TransactionForm({ title, kind, initial, submitLabel, onSubmit, o
       {kind === 'expense' ? <CategoryPicker value={categoryId} onChange={(id) => { setCategoryId(id); setErrors({ ...errors, category: undefined }); }} error={errors.category} /> : null}
       <WalletPicker value={walletId} onChange={setWalletId} error={errors.wallet} />
       {kind === 'expense' ? <TagPicker value={tags} onChange={setTags} /> : null}
+      {kind === 'expense' ? (
+        <ToggleRow
+          label="One-time OJT requirement"
+          description="Medical, NBI, uniform, ID… Counted in your OJT total, left out of daily averages."
+          value={isOneTime}
+          onChange={(on) => {
+            setIsOneTime(on);
+            const reqId = categoryTree.find((c) => c.key === 'essentials')?.children.find((c) => c.key === 'ess_ojt_req')?.id;
+            if (on && categoryId == null && reqId != null) {
+              setCategoryId(reqId);
+              setErrors({ ...errors, category: undefined });
+            }
+          }}
+        />
+      ) : null}
       <TextField label="Note (optional)" value={note} onChangeText={setNote} placeholder={kind === 'income' ? 'e.g. Baon from Mama' : 'e.g. Jollibee with team'} />
       {onDelete ? <Button label="Delete" variant="secondary" onPress={onDelete} /> : null}
     </Screen>

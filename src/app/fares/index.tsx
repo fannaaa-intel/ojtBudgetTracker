@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Chip, ListRow, Screen, Section } from '@/components';
+import { Button, Chip, ListRow, Screen, Section } from '@/components';
 import { FaresCheckedBanner } from '@/features/commute/components/FaresCheckedBanner';
 import { useFareRules, type FareRule } from '@/features/commute/queries';
 import { useProfile } from '@/features/profile/queries';
@@ -21,7 +21,12 @@ export default function FareTable() {
   if (!profile) return null;
 
   return (
-    <Screen insetTop={false} title="Fare table" subtitle={`${REGION_LABEL[profile.user.region]} fares. Tap a row to edit.`}>
+    <Screen
+      insetTop={false}
+      title="Fare table"
+      subtitle={`${REGION_LABEL[profile.user.region]} fares. Tap a row to edit.`}
+      footer={<Button label="Update fares after a hike" variant="secondary" onPress={() => router.push('/fares/update')} />}
+    >
       <FaresCheckedBanner region={profile.user.region} />
       <Section>
         {rules.map((r, i) => (

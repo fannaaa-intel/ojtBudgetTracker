@@ -22,6 +22,34 @@
       "when": 1794457753212,
       "tag": "0002_little_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794461653090,
+      "tag": "0003_familiar_wiccan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794461904124,
+      "tag": "0004_freezing_eddie_brock",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794462277336,
+      "tag": "0005_awesome_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794462508090,
+      "tag": "0006_modern_psylocke",
+      "breakpoints": true
     }
   ]
 }

@@ -9,7 +9,9 @@ import { fareRules, routeLegs, routes, transactions, type Region } from '@/db/sc
 import { useDbQuery } from '@/db/useDbQuery';
 import { FARE_RULE_SEED } from '@/db/seed/fareRules';
 import { todayManila } from '@/lib/dates';
+import { fareCheckDue, lastChecked } from '@/lib/fareCheck';
 import type { FareValues } from '@/lib/fareForm';
+import { getSetting, setSetting } from '../settings/appSettings';
 import { isModeAllowed } from '@/lib/region';
 import { routeTotals, type LegValues } from '@/lib/route';
 import { getProfile } from '../profile/queries';
@@ -69,6 +71,37 @@ export function resetFareRule(id: number): boolean {
     .where(eq(fareRules.id, id))
     .run();
   return true;
+}
+
+/**
+ * Bulk fare update: save several rules at once with a new effective date, and record today
+ * as the day fares were checked. Logged transactions keep their amounts.
+ */
+export function updateFaresBulk(rows: { id: number; values: FareValues }[], effectiveDate: string): void {
+  db.transaction((tx) => {
+    for (const r of rows) {
+      tx.update(fareRules)
+        .set({ ...r.values, effectiveDate, userEdited: true, updatedAt: sql`(datetime('now'))` })
+        .where(eq(fareRules.id, r.id))
+        .run();
+    }
+  });
+  setSetting('fares_checked_on', todayManila());
+}
+
+/** "Fares still correct": restart the 90-day reminder without changing any fare. */
+export function markFaresChecked(): void {
+  setSetting('fares_checked_on', todayManila());
+}
+
+/** When fares were last checked (newest effective date or the user's check) and whether a check is due. */
+export function getFareCheck(region: Region, today: string = todayManila()) {
+  const last = lastChecked(faresLastChecked(region), getSetting('fares_checked_on'));
+  return { last, due: fareCheckDue(today, last) };
+}
+
+export function useFareCheck(region: Region | undefined) {
+  return useDbQuery(() => (region ? getFareCheck(region) : { last: null, due: false }), ['fare_rules', 'app_settings'], [region]);
 }
 
 /** Latest effective date among the region's rules — drives "Fares last checked". */

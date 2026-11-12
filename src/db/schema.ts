@@ -160,6 +160,7 @@ export const transactions = sqliteTable(
     walletId: integer('wallet_id').references(() => wallets.id),
     routeId: integer('route_id').references(() => routes.id),
     incomeSourceId: integer('income_source_id').references(() => incomeSources.id), // income only
+    savingsGoalId: integer('savings_goal_id').references(() => savingsGoals.id), // transfer into a goal
     tags: text('tags'), // comma-separated: late,rainy,baon
     note: text('note'),
     isOneTime: bool('is_one_time').notNull().default(false),
@@ -207,6 +208,8 @@ export const recurringBills = sqliteTable('recurring_bills', {
   amount: integer('amount').notNull(),
   dueDay: integer('due_day').notNull(), // 1-31
   isVariable: bool('is_variable').notNull().default(false), // e.g. electricity
+  /** Roommate split: none, equal (everyone incl. me), or custom amounts in bill_shares. */
+  splitMode: text('split_mode', { enum: ['none', 'equal', 'custom'] }).notNull().default('none'),
   ...timestamps,
 });
 
@@ -216,6 +219,7 @@ export const billPayments = sqliteTable('bill_payments', {
   period: text('period').notNull(), // 'YYYY-MM'
   amount: integer('amount').notNull(),
   paidAt: text('paid_at'),
+  transactionId: integer('transaction_id').references(() => transactions.id), // the expense logged when paid
 });
 
 export const roommates = sqliteTable('roommates', {
@@ -235,6 +239,18 @@ export const billShares = sqliteTable(
   (t) => [primaryKey({ columns: [t.billId, t.roommateId] })],
 );
 
+/** Whether a roommate paid their share of a bill for one month. */
+export const billSharePayments = sqliteTable(
+  'bill_share_payments',
+  {
+    billId: integer('bill_id').notNull().references(() => recurringBills.id, { onDelete: 'cascade' }),
+    roommateId: integer('roommate_id').notNull().references(() => roommates.id, { onDelete: 'cascade' }),
+    period: text('period').notNull(), // 'YYYY-MM'
+    paidAt: text('paid_at').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.billId, t.roommateId, t.period] })],
+);
+
 // ── Food, essentials, goals ─────────────────────────────────────
 export const groceryItems = sqliteTable('grocery_items', {
   id: id(),
@@ -252,6 +268,8 @@ export const restockItems = sqliteTable('restock_items', {
   lastBought: text('last_bought'),
   lastsDays: integer('lasts_days').notNull(),
   typicalPrice: integer('typical_price'),
+  kind: text('kind', { enum: ['restock', 'laundry', 'load', 'health', 'grooming'] }).notNull().default('restock'),
+  categoryId: integer('category_id').references(() => categories.id),
 });
 
 export const savingsGoals = sqliteTable('savings_goals', {
@@ -273,6 +291,12 @@ export const debts = sqliteTable('debts', {
   note: text('note'),
   settledAt: text('settled_at'),
   ...timestamps,
+});
+
+// ── App settings (key → value; e.g. electricity rate, reminder times, fares checked date) ──
+export const appSettings = sqliteTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
 });
 
 // ── Barkada (group features: only when the barkada's region matches the user's) ──

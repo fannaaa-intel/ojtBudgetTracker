@@ -97,16 +97,16 @@ Acceptance: an intern can register, set up their route once, log a full day (com
 
 ## 5. Phase 2 — OJT layer and living costs
 
-- [ ] OJT hours log per day (worked / absent / WFH / holiday); auto-skip holidays from `holidays`
-- [ ] Projected end date (`projectEndDate`), cost per OJT day, cost per OJT hour, projected total cost to finish
-- [ ] Recurring bills (rent, electricity, water, Wi-Fi, LPG) with due-day reminders; electricity estimator kWh × rate (default ₱15.06/kWh Meralco Oct 2026, editable; Bicol = user's co-op rate)
-- [ ] Roommate split for bills (equal/custom, paid status) — shown when living setup = renting/dorm
-- [ ] Gala allowance (weekly) + gala planner (fare from saved rules + food + activity)
-- [ ] Essentials: restock reminders, laundry, load expiry, health, grooming, OJT requirements (one-time tag)
-- [ ] Savings goals + emergency fund (default target = 1 month of necessities)
-- [ ] Reports: charts by category and period (`react-native-gifted-charts` + `react-native-svg`), monochrome greys only
-- [ ] Local notifications (`expo-notifications`): 7 PM log reminder, bills, budgets, restock
-- [ ] Fare update screen: bulk edit a mode; 90-day "check fares" reminder; past transactions never change
+- [x] OJT hours log per day (worked / absent / WFH / holiday); auto-skip holidays from `holidays`
+- [x] Projected end date (`projectEndDate`), cost per OJT day, cost per OJT hour, projected total cost to finish
+- [x] Recurring bills (rent, electricity, water, Wi-Fi, LPG) with due-day reminders; electricity estimator kWh × rate (default ₱15.06/kWh Meralco Oct 2026, editable; Bicol = user's co-op rate)
+- [x] Roommate split for bills (equal/custom, paid status) — shown when living setup = renting/dorm
+- [x] Gala allowance (weekly) + gala planner (fare from saved rules + food + activity)
+- [x] Essentials: restock reminders, laundry, load expiry, health, grooming, OJT requirements (one-time tag)
+- [x] Savings goals + emergency fund (default target = 1 month of necessities)
+- [x] Reports: charts by category and period — simple View-based bar charts (no chart library; decided Nov 12, 2026), monochrome greys only
+- [x] Local notifications (`expo-notifications`): 7 PM log reminder, bills, budgets, restock · OJT-hours-not-logged reminder (6 PM workdays)
+- [x] Fare update screen: bulk edit a mode; 90-day "check fares" reminder; past transactions never change
 
 ---
 

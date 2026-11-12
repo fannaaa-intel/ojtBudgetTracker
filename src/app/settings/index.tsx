@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import { ListRow, Screen, Section } from '@/components';
 import { useProfile } from '@/features/profile/queries';
+import { useElectricityRate } from '@/features/settings/appSettings';
+import { formatPeso } from '@/lib/money';
 import { formatDateLabel } from '@/lib/dates';
 import { REGION_LABEL } from '@/lib/region';
 import { useThemePref } from '@/store/theme';
@@ -10,6 +12,7 @@ const THEME_LABEL = { system: 'Same as phone', light: 'Light', dark: 'Dark' } as
 export default function Settings() {
   const profile = useProfile();
   const pref = useThemePref((s) => s.pref);
+  const elec = useElectricityRate(profile?.user.region);
   if (!profile) return null;
   const { user, profile: ojt, agency } = profile;
 
@@ -29,7 +32,21 @@ export default function Settings() {
           last
         />
       </Section>
+      <Section title="Living costs">
+        <ListRow
+          title="Living setup & roommates"
+          subtitle={{ home: 'Living at home', renting: 'Renting', dorm: 'Dorm' }[ojt.livingSetup]}
+          onPress={() => router.push('/settings/living')}
+        />
+        <ListRow
+          title="Electricity rate"
+          subtitle={elec.rate != null ? `${formatPeso(elec.rate)}/kWh${elec.isDefault ? ' (default)' : ''}` : 'Not set — enter your co-op’s rate'}
+          onPress={() => router.push('/settings/electricity')}
+          last
+        />
+      </Section>
       <Section title="App">
+        <ListRow title="Reminders" subtitle="Daily log, OJT hours, bills, budgets, essentials, fares" onPress={() => router.push('/settings/reminders')} />
         <ListRow title="Appearance" subtitle={THEME_LABEL[pref]} onPress={() => router.push('/settings/appearance')} last />
       </Section>
     </Screen>

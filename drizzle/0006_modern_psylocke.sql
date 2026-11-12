@@ -1,0 +1,1 @@
+ALTER TABLE `transactions` ADD `savings_goal_id` integer REFERENCES savings_goals(id);

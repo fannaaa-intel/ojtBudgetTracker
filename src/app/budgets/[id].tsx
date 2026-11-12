@@ -14,13 +14,15 @@ import { useTheme } from '@/theme';
 /** /budgets/new or /budgets/<id>: one envelope per category (or all spending) and period. */
 export default function BudgetForm() {
   const { spacing } = useTheme();
-  const { id: idParam } = useLocalSearchParams<{ id: string }>();
+  // Optional presets for a new budget, e.g. /budgets/new?category=gala&period=weekly
+  const { id: idParam, category: presetKey, period: presetPeriod } = useLocalSearchParams<{ id: string; category?: string; period?: string }>();
   const editingId = idParam === 'new' ? undefined : Number(idParam);
   const [initial] = useState(() => (editingId != null ? getBudget(editingId) : undefined));
   const tree = useCategoryTree();
+  const presetId = presetKey ? tree.find((c) => c.key === presetKey)?.id : undefined;
 
-  const [categoryId, setCategoryId] = useState<number | null | undefined>(initial ? initial.categoryId : undefined);
-  const [period, setPeriod] = useState<BudgetPeriod>(initial?.period === 'monthly' ? 'monthly' : 'weekly');
+  const [categoryId, setCategoryId] = useState<number | null | undefined>(initial ? initial.categoryId : presetId);
+  const [period, setPeriod] = useState<BudgetPeriod>(initial ? (initial.period === 'monthly' ? 'monthly' : 'weekly') : presetPeriod === 'monthly' ? 'monthly' : 'weekly');
   const [limitText, setLimitText] = useState(initial ? amountToInput(initial.limitAmount) : '');
   const [rollover, setRollover] = useState(initial?.rollover ?? false);
   const [error, setError] = useState<string | null>(null);

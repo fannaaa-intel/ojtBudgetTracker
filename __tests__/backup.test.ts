@@ -6,8 +6,10 @@ const allTableNames = TABLE_NAMES;
 describe('backup', () => {
   const now = new Date('2026-11-12T04:30:00.000Z');
 
-  it('the schema has 26 tables and every one goes in the backup', () => {
-    expect(allTableNames).toHaveLength(26);
+  it('every schema table (28, incl. app_settings and bill_share_payments) goes in the backup', () => {
+    expect(allTableNames).toHaveLength(28);
+    expect(allTableNames).toContain('bill_share_payments');
+    expect(allTableNames).toContain('app_settings');
     const tables = Object.fromEntries(allTableNames.map((n) => [n, [] as unknown[]]));
     const b = buildBackup(tables, { schemaVersion: 3, now, today: '2026-11-12' });
     expect(Object.keys(b.tables)).toEqual(allTableNames);

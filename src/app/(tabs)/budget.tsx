@@ -1,15 +1,17 @@
 import { router } from 'expo-router';
-import { AppText, Button, Screen, Section } from '@/components';
-import { TodoList } from '@/components/TodoList';
+import { AppText, Button, ListRow, Screen, Section } from '@/components';
+import { BillsSummary } from '@/features/bills/components/BillsSummary';
 import { BudgetEnvelope } from '@/features/budgets/components/BudgetEnvelope';
 import { SafeToSpendCard } from '@/features/budgets/components/SafeToSpendCard';
 import { useBudgetProgress } from '@/features/budgets/queries';
+import { useGoals } from '@/features/savings/queries';
 import { formatDateLabel } from '@/lib/dates';
 
 export default function Budget() {
   const progress = useBudgetProgress();
   const weekly = progress.filter((p) => p.budget.period === 'weekly');
   const monthly = progress.filter((p) => p.budget.period === 'monthly');
+  const goals = useGoals();
 
   return (
     <Screen title="Budget" subtitle="Envelopes per category. Weeks run Monday to Sunday.">
@@ -30,7 +32,16 @@ export default function Budget() {
       ) : null}
       {progress.length === 0 ? <AppText tone="secondary">No budgets yet. Start with a weekly Pagkain or Pamasahe envelope.</AppText> : null}
       <Button label="Add budget" onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: 'new' } })} />
-      <TodoList phase="Phase 2" items={['Bills & rent with due dates', 'Roommate split', 'Gala allowance + planner', 'Savings goals + emergency fund']} />
+      <BillsSummary />
+      <Section title="Gala & savings">
+        <ListRow title="Gala planner" subtitle="Weekly allowance · plan fare, food and activity" onPress={() => router.push('/gala')} />
+        <ListRow
+          title="Savings & emergency fund"
+          subtitle={goals.length ? goals.map((g) => `${g.goal.name} ${g.pct}%`).join(' · ') : 'Goals and a 1-month emergency fund'}
+          onPress={() => router.push('/savings')}
+          last
+        />
+      </Section>
     </Screen>
   );
 }

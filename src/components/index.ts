@@ -1,9 +1,11 @@
 export { AmountPrompt } from './AmountPrompt';
 export { AppText } from './AppText';
+export { BarChart, HBarRow } from './BarChart';
 export { Button } from './Button';
 export { Chip, ChipRow } from './Chip';
 export { DateField } from './DateField';
 export { ListRow, Section } from './ListRow';
+export { Logo } from './Logo';
 export { OptionRow } from './OptionRow';
 export { ProgressBar } from './ProgressBar';
 export { Screen } from './Screen';

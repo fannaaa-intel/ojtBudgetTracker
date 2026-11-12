@@ -7,13 +7,19 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#FFFFFF",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ojt.budgettracker"
     },
     "android": {
       "package": "com.ojt.budgettracker",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/adaptive-monochrome.png",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "plugins": [
       "expo-router",
@@ -24,8 +30,11 @@
       [
         "expo-splash-screen",
         {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
           "backgroundColor": "#FFFFFF",
-          "dark": { "backgroundColor": "#0A0A0A" }
+          "dark": { "image": "./assets/splash-icon-dark.png", "backgroundColor": "#0A0A0A" }
         }
       ]
     ],
