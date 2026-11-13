@@ -16,12 +16,14 @@ type Props = {
   confirmLabel: string;
   /** Allow ₱0 (e.g. setting a preset back to baon-style ₱0). */
   allowZero?: boolean;
+  /** Extra check on the parsed amount; return an error message to block submit (e.g. "more than saved"). */
+  validate?: (centavos: number) => string | null;
   onSubmit: (centavos: number) => void;
   onCancel: () => void;
 };
 
 /** Small dialog that asks for one peso amount. Returns integer centavos. */
-export function AmountPrompt({ visible, title, message, initial = 0, confirmLabel, allowZero, onSubmit, onCancel }: Props) {
+export function AmountPrompt({ visible, title, message, initial = 0, confirmLabel, allowZero, validate, onSubmit, onCancel }: Props) {
   const { colors, radius, spacing, typography } = useTheme();
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,11 @@ export function AmountPrompt({ visible, title, message, initial = 0, confirmLabe
     const c = toCentavos(text);
     if (c == null || c < 0 || (!allowZero && c === 0)) {
       setError(allowZero ? 'Enter an amount (0 is allowed)' : 'Enter an amount more than ₱0');
+      return;
+    }
+    const extra = validate?.(c);
+    if (extra) {
+      setError(extra);
       return;
     }
     onSubmit(c);

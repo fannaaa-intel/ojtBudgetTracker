@@ -3,6 +3,7 @@ import { Appear, ListRow, Screen, Section } from '@/components';
 import { EraseRow } from '@/features/backup/EraseRow';
 import { useProfile } from '@/features/profile/queries';
 import { useElectricityRate } from '@/features/settings/appSettings';
+import { UpdateRow } from '@/features/updates/UpdateRow';
 import { formatDateLabel } from '@/lib/dates';
 import { formatPeso } from '@/lib/money';
 import { REGION_LABEL } from '@/lib/region';
@@ -57,7 +58,8 @@ export default function Settings() {
           <ListRow icon="lock-closed-outline" title="App lock" subtitle={profile.user.pinHash ? 'PIN on' : 'Off'} onPress={() => router.push('/settings/security')} />
           <ListRow icon="notifications-outline" title="Reminders" subtitle="Logs, hours, bills and more" onPress={() => router.push('/settings/reminders')} />
           <ListRow icon="contrast-outline" title="Appearance" subtitle={THEME_LABEL[pref]} onPress={() => router.push('/settings/appearance')} />
-          <ListRow icon="language-outline" title="Labels" subtitle={labelMode === 'taglish' ? 'Taglish' : 'English'} onPress={() => router.push('/settings/labels')} last />
+          <ListRow icon="language-outline" title="Labels" subtitle={labelMode === 'taglish' ? 'Taglish' : 'English'} onPress={() => router.push('/settings/labels')} />
+          <UpdateRow last />
         </Section>
       </Appear>
       <Appear index={3}>

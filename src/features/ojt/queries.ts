@@ -3,14 +3,17 @@ import { db } from '@/db/client';
 import { holidays, ojtDays } from '@/db/schema';
 import { useDbQuery } from '@/db/useDbQuery';
 import { addDays, todayManila, type ISODate } from '@/lib/dates';
+import { holidaysFor } from '@/lib/seedTopUp';
 import { daysWorked, hoursDone, ojtProjection, ojtTimeline, parseWorkdays, unloggedWorkdays, type OjtLog, type OjtStatus } from '@/lib/ojt';
 import { getProfile } from '../profile/queries';
 import { sumAmount, sumOneTime } from '../transactions/queries';
 
 export const OJT_TABLES = ['ojt_days', 'holidays', 'ojt_profile', 'users', 'transactions'] as const;
 
-export function getHolidayMap(): Map<ISODate, string> {
-  return new Map(db.select().from(holidays).orderBy(asc(holidays.date)).all().map((h) => [h.date, h.name]));
+/** National holidays plus the user's region's local ones (e.g. LGU Talisay for Bicol). */
+export function getHolidayMap(region?: string | null): Map<ISODate, string> {
+  const rows = db.select().from(holidays).orderBy(asc(holidays.date)).all();
+  return new Map(holidaysFor(rows, region ?? getProfile()?.user.region).map((h) => [h.date, h.name]));
 }
 
 export function getOjtLogs(userId: number): Map<ISODate, OjtLog> {
@@ -23,7 +26,7 @@ export function getOjtState(today: ISODate = todayManila()) {
   const p = getProfile();
   if (!p) return undefined;
   const workdays = parseWorkdays(p.profile.workdays);
-  const hol = getHolidayMap();
+  const hol = getHolidayMap(p.user.region);
   const logs = getOjtLogs(p.user.id);
   const logList = [...logs.values()];
   const start = p.profile.startDate;

@@ -14,7 +14,7 @@ Expo (React Native) + Expo Router (`src/app`) · expo-sqlite + Drizzle ORM · Zu
 1. **Money is integer centavos.** Never store or add floats of pesos. Parse with `toCentavos`, show with `formatPeso` (`src/lib/money.ts`).
 2. **Never hardcode fares or prices in screens.** Read `fare_rules` / `meal_presets` from the DB; compute with `computeFare` / `computeRouteFare` (`src/lib/fare.ts`).
 3. **A saved transaction keeps the amount actually paid.** Fare edits never rewrite history.
-4. **Offline only.** No network calls, no analytics, no remote fonts/images.
+4. **Offline only.** No network calls, no analytics, no remote fonts/images. **One exception (owner decision, Nov 13, 2026):** app updates via `expo-updates` (EAS Update) — automatic check only 8 PM–12 AM Manila, or Settings → Check for updates (`src/features/updates/`). It never sends user data, and the app must work fully without it.
 5. **expo-sqlite is synchronous inside transactions**: use `.run() / .get() / .all()` in `db.transaction((tx) => …)`, never async callbacks.
 6. **Dates are `YYYY-MM-DD` strings** in Asia/Manila; use helpers in `src/lib/dates.ts` (no `new Date('YYYY-MM-DD')` local parsing).
 7. **Region rules**: user.region comes from the chosen agency. `REGION_V` (Bicol, LGU Talisay) hides MRT/LRT/Carousel and all barkada/ambagan features.

@@ -38,6 +38,7 @@ export default function Commute() {
               subtitle={beep.beep ? 'Balance on the card' : 'For trains and the Carousel'}
               value={beep.beep ? formatPeso(beep.balance) : undefined}
               right={beep.low ? <Chip label="Low" status="inverse" /> : undefined}
+              status={beep.low ? 'Low balance' : undefined}
               onPress={() => router.push('/wallets/beep')}
             />
           ) : null}

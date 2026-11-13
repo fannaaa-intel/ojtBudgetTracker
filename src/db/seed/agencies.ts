@@ -1,10 +1,15 @@
+import { encodePlusCode } from '@/lib/distance';
 import type { Region } from '../schema';
 
 /**
  * The 4 OJT agencies users choose from at registration.
  * Interns: NFRDI 2, LGU Talisay 1, ITC Bldg 2, LANDBANK Plaza 1.
- * lat/lng: only NFRDI is known (decoded from its Plus Code M24X+CHV).
- * TODO(open question): add the Google Maps pin for the other three so distance estimates work.
+ * Pins (looked up Nov 13, 2026 at the owner's request; Plus Codes derived from them):
+ *   NFRDI           Plus Code M24X+CHV (known)
+ *   ITC Bldg        Waze listing, building-level
+ *   LANDBANK Plaza  Structurae, building-level
+ *   LGU Talisay     PhilAtlas town centre (the hall is in Poblacion, within a few hundred m)
+ * Installed phones get missing pins through topUpSeed() — it never overwrites a pin.
  */
 export const AGENCY_SEED: {
   code: string;
@@ -38,9 +43,9 @@ export const AGENCY_SEED: {
     city: 'Talisay',
     province: 'Camarines Norte',
     region: 'REGION_V', // Bicol Region
-    lat: null,
-    lng: null,
-    plusCode: null,
+    lat: 14.1371,
+    lng: 122.9256,
+    plusCode: encodePlusCode(14.1371, 122.9256),
   },
   {
     code: 'ITC_MAKATI',
@@ -50,9 +55,9 @@ export const AGENCY_SEED: {
     city: 'Makati',
     province: null,
     region: 'NCR',
-    lat: null,
-    lng: null,
-    plusCode: null,
+    lat: 14.5626,
+    lng: 121.0231,
+    plusCode: encodePlusCode(14.5626, 121.0231),
   },
   {
     code: 'LANDBANK_PLAZA',
@@ -62,8 +67,8 @@ export const AGENCY_SEED: {
     city: 'Manila',
     province: null,
     region: 'NCR',
-    lat: null,
-    lng: null,
-    plusCode: null,
+    lat: 14.5726,
+    lng: 120.9829,
+    plusCode: encodePlusCode(14.5726, 120.9829),
   },
 ];

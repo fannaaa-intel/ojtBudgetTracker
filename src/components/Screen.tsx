@@ -21,7 +21,9 @@ export function Screen({ title, subtitle, children, scroll = true, footer, inset
     <View style={{ padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.xl }}>
       {title ? (
         <View style={{ gap: spacing.xs, marginTop: spacing.sm }}>
-          <AppText variant="title">{title}</AppText>
+          <AppText variant="title" accessibilityRole="header">
+            {title}
+          </AppText>
           {subtitle ? <AppText tone="secondary">{subtitle}</AppText> : null}
         </View>
       ) : null}

@@ -54,6 +54,7 @@ export default function Grocery() {
                 title={item.name}
                 subtitle={note ?? undefined}
                 right={item.inCart && priceWentUp(item.lastPrice, item.cartPrice) ? <Chip label="Price up" status="outline" /> : undefined}
+                status={[item.inCart ? 'In cart' : null, item.inCart && priceWentUp(item.lastPrice, item.cartPrice) ? 'Price up' : null].filter(Boolean).join(', ') || undefined}
                 value={item.inCart && item.cartPrice ? formatPeso(item.cartPrice) : undefined}
                 onPress={() => (item.inCart ? setInCart(item.id, null) : setPricing(item))}
                 last={i === list.length - 1}

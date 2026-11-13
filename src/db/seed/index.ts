@@ -1,4 +1,5 @@
 import { count, eq } from 'drizzle-orm';
+import { agencyPinUpdates, missingAgencies, missingHolidays } from '@/lib/seedTopUp';
 import type { DB } from '../client';
 import { agencies, categories, fareRules, holidays, mealPresets } from '../schema';
 import { AGENCY_SEED } from './agencies';
@@ -33,5 +34,24 @@ export function seedIfEmpty(db: DB): void {
         .values({ key: c.key, name: c.name, icon: c.icon, bucket: c.bucket, parentId: parent.id, sort: sort++ })
         .run();
     }
+  });
+}
+
+/**
+ * Brings an older install up to date with the shipped reference data: new holidays, new agencies,
+ * and agency map pins that were missing. Never changes rows the user can edit. Safe on every start.
+ */
+export function topUpSeed(db: DB): void {
+  const haveDates = db.select({ date: holidays.date }).from(holidays).all().map((r) => r.date);
+  const haveAgencies = db.select({ code: agencies.code, lat: agencies.lat, lng: agencies.lng, plusCode: agencies.plusCode }).from(agencies).all();
+  const newHolidays = missingHolidays(haveDates, HOLIDAY_SEED);
+  const newAgencies = missingAgencies(haveAgencies.map((a) => a.code), AGENCY_SEED);
+  const pins = agencyPinUpdates(haveAgencies, AGENCY_SEED);
+  if (newHolidays.length === 0 && newAgencies.length === 0 && pins.length === 0) return;
+
+  db.transaction((tx) => {
+    if (newHolidays.length) tx.insert(holidays).values(newHolidays).run();
+    if (newAgencies.length) tx.insert(agencies).values(newAgencies).run();
+    for (const p of pins) tx.update(agencies).set({ lat: p.lat, lng: p.lng, plusCode: p.plusCode }).where(eq(agencies.code, p.code)).run();
   });
 }

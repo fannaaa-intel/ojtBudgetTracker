@@ -26,6 +26,7 @@ export function RouteList({ routes, isStudent }: { routes: RouteWithLegs[]; isSt
             title={r.name}
             subtitle={r.needsUpdate ? 'Needs update: fares from another region' : routeSummary(r)}
             right={r.isDefault ? <Chip label="Daily" status="plain" /> : undefined}
+            status={r.isDefault ? 'Daily route' : undefined}
             value={r.needsUpdate ? undefined : formatPeso(totalsFor(r, isStudent).roundTrip)}
             onPress={() => router.push({ pathname: '/routes/[id]', params: { id: String(r.id) } })}
             last={i === routes.length - 1}

@@ -79,6 +79,8 @@ export const holidays = sqliteTable('holidays', {
   date: text('date').primaryKey(),
   name: text('name').notNull(),
   type: text('type', { enum: ['regular', 'special'] }).notNull(),
+  /** null = national holiday; a region = local holiday only for users in that region (e.g. LGU Talisay). */
+  region: text('region', { enum: REGIONS }),
 });
 
 // ── Commute ─────────────────────────────────────────────────────

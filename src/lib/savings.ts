@@ -9,6 +9,21 @@ import { daysBetween } from './paySchedule';
 
 export const EMERGENCY_DAYS = 30;
 
+/**
+ * Saved = opening amount + money put in − money taken out (both are transfers, never spending).
+ * Never below 0, even if old data is inconsistent.
+ */
+export function goalSaved(opening: number, putIn: number, takenOut: number): number {
+  return Math.max(0, opening + putIn - takenOut);
+}
+
+/** Error text for a withdrawal, or null when it's allowed (more than ₱0, at most what's saved). */
+export function withdrawalError(amount: number, saved: number): string | null {
+  if (!Number.isInteger(amount) || amount <= 0) return 'Enter an amount more than ₱0';
+  if (amount > saved) return 'That is more than this goal has';
+  return null;
+}
+
 export function goalPct(saved: number, target: number): number {
   if (target <= 0) return saved > 0 ? 100 : 0;
   return Math.min(100, Math.round((saved * 100) / target));

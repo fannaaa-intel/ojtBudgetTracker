@@ -34,9 +34,10 @@ Read in this order: **CLAUDE.md** (rules) → **plan.md** (decisions + checklist
 | 3 Extras + polish | ✅ items 1–7 · ⏳ item 8 = **owner's phone run of `docs/TEST_PLAN.md`** |
 | UI polish after Phase 3 | ✅ line heights, roomier rows/sections, wrap instead of squeeze, redesigned Welcome screen |
 | Theme switch | ✅ snapshot cross-fade (`react-native-view-shot`, 450 ms ease-in-out) when tapping Settings → Appearance; flicker-free colour fade for phone-driven changes; off with Reduce Motion — **owner to confirm it feels smooth on the phone** |
-| UI pass (space + motion) | ✅ plan.md §6a items 1–7 built 2026-11-13, committed + pushed with the theme cross-fade ("UI pass: space, motion, Welcome showcase") · ⏳ item 8 cross-fade tuning waits for owner feedback · **STEP 3 report given** |
+| UI pass (space + motion) | ✅ plan.md §6a items 1–7 built 2026-11-13, committed + pushed (`0d21079`) · ⏳ item 8 cross-fade tuning waits for owner feedback |
+| 4 Real phones + loose ends | ✅ plan.md §6b items 1–5 built 2026-11-13 (**not committed yet**) · ⏳ item 6 APK: setup done, project linked — owner runs the EAS build · **STEP 3 report given** |
 
-Numbers: 29 test suites / **190 tests** passing · migrations `0000`–`0009` (all additive after 0000) · 28 tables.
+Numbers: 31 test suites / **203 tests** passing · migrations `0000`–`0010` (all additive after 0000; 0010 = `holidays.region`) · 28 tables.
 
 ## 3. Next (what the next session starts with)
 
@@ -59,23 +60,53 @@ Numbers: 29 test suites / **190 tests** passing · migrations `0000`–`0009` (a
    - Home `OjtProgressCard compact`; the full cost rows are on the OJT screen.
 1. **Owner runs `docs/TEST_PLAN.md`** on the phone (Metro Manila profile → Settings → Erase all data →
    Talisay profile → fare hike → restore). Fix anything reported, then tick Phase 3 item 8.
-2. **Phase 4 is not defined in plan.md yet.** Propose it as a STEP 1 report and wait for GO. Good
-   candidates (owner has not decided any of these):
-   - Development build / APK (EAS) so the logo icon, splash and notifications work outside Expo Go;
-     verify local notifications on SDK 58 and clear the Expo Go notification warnings
-   - Fill plan.md §8 open questions: Plus Codes for LGU Talisay, ITC Bldg, LANDBANK Plaza
-     (`src/db/seed/agencies.ts`), custom-agency option, LRT-2/MRT-3 promo end
-   - Savings withdrawals; multiple Beep cards; 2027 holiday list
-   - Optional: DB-level tests with an in-memory SQLite harness for the query layer
-   - Accessibility pass (font scaling at 130%, TalkBack labels)
+2. **Phase 4 — items 1–5 built (2026-11-13), STEP 3 report given.** How it's built:
+   - `topUpSeed(db)` (`src/db/seed/index.ts`, logic in `src/lib/seedTopUp.ts`) runs on every start
+     and after a restore: adds missing holidays (by date) / agencies (by code) and missing agency pins.
+     **To ship new holidays or pins later, just add them to the seed files** — installed phones get them.
+   - `holidays.region` (null = national). `getHolidayMap(region)` / `holidaysFor()` filter by the
+     user's region. REGION_V rows = Camarines Norte days for the Talisay intern (Feb 1, Sept 28).
+   - 2027 list = Proclamation 1427 s. 2026 (read via GMA News; Official Gazette blocks bots).
+     Eid'l Fitr / Eid'l Adha not in yet — add when their proclamations come out.
+   - Agency pins in `agencies.ts`; `encodePlusCode()` in `src/lib/distance.ts` derives the codes.
+     Talisay is the town centre — replace with the hall's exact pin if the intern sends one.
+   - Savings withdrawal = transfer with `savings_goal_id` + `to_wallet_id` (Cash), `wallet_id` null.
+     `goalSaved()` / `withdrawalError()` in `src/lib/savings.ts`. AmountPrompt has `validate`.
+   - ListRow: `status` (spoken) and `actions` (TalkBack custom actions). AppText caps font scaling
+     for display / amountLarge / title / label only.
+3. **APK (§6b item 6): setup done 2026-11-13, owner runs the build.** Expo account `sersi07`
+   (also has a team `sersi07s-team` — we use the personal one). Project linked:
+   https://expo.dev/accounts/sersi07/projects/ojt-budget-tracker. Owner runs
+   `npx eas-cli build -p android --profile preview` (first run asks to generate an Android keystore →
+   Yes; EAS stores it). Install the APK link on the phone; move data via Back up → Restore.
+   Bump `version` + `android.versionCode` in app.json before every new APK (appVersionSource local).
+   Notes: `expo-font` must stay installed (vector icons need it outside Expo Go); run
+   `npx expo-doctor` before builds; npm now skips install scripts (esbuild) — harmless so far.
+   **The first APK the owner built (started before expo-updates was added) is a test copy only —
+   the APK sent to interns must be built after the app-updates change.**
+4. **Shipping a revision (EAS Update)** — owner decision 2026-11-13, see CLAUDE.md rule 4:
+   - JS-only change (screens, logic, copy, seed data like holidays/fares): **do NOT change
+     `version`** (runtime = app version). Run checks, commit, then the owner runs
+     `npx eas-cli update --channel preview --platform android --message "<what changed>"` and tells the interns to open
+     the app between 8 PM and 12 AM (or Settings → Check for updates). They tap Restart.
+   - Native change (new native package, plugin, icon, permissions): bump `version` **and**
+     `android.versionCode`, build a new APK, everyone reinstalls (data stays only if they back up →
+     restore; reinstalling over the old APK with the same package + keystore keeps data).
+   - Code: `src/lib/updates.ts` (window maths, tested), `src/features/updates/` (appUpdate store,
+     UpdateSync in the root layout, UpdateRow in Settings). `checkAutomatically: NEVER` in app.json —
+     we decide when to check. Disabled in Expo Go / dev.
+   - Rollback a bad update: `npx eas-cli update:rollback` (or republish the previous commit).
 
 ## 4. What "GO" means next session
 
 - If the last thing given was a **STEP 1 report** → GO = build that phase (STEP 2), then STEP 3 report.
 - If the last thing given was a **STEP 3 phase report** → GO = write the **next phase's
   STEP 1 report** (no code), then wait.
-- **Current state (2026-11-13): the UI-pass STEP 3 report was the last thing given** → apply any
-  fixes the owner reports first; a plain GO = write the **Phase 4 STEP 1 report** (no code).
+- **Current state (2026-11-13): the Phase 4 STEP 3 report was the last thing given** (items 1–5
+  done, not committed; item 6 APK set up, owner runs the build). Next: apply fixes from the owner's
+  phone check / APK install; "commit and push" when asked; tick item 6 once the APK installs. No Phase 5 is defined — a plain GO after
+  the APK = propose Phase 5 as a STEP 1 report (ideas: Eid holiday dates when proclaimed, Talisay
+  hall pin, multiple Beep cards, DB-level test harness).
 - "commit and push" = commit to `main` and `git push`.
 
 ## 5. Working notes (gotchas)

@@ -71,6 +71,13 @@
       "when": 1794463829447,
       "tag": "0009_parched_lifeguard",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1794534620178,
+      "tag": "0010_unique_shatterstar",
+      "breakpoints": true
     }
   ]
 }

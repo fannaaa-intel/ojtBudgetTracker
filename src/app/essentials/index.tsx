@@ -56,6 +56,8 @@ export default function Essentials() {
                       <Button label="Bought" variant="secondary" onPress={() => setBuying(item)} style={{ minHeight: 48 }} />
                     </>
                   }
+                  status={quiet ? undefined : label}
+                  actions={[{ label: 'Bought', onPress: () => setBuying(item) }]}
                   onPress={() => router.push({ pathname: '/essentials/[id]', params: { id: String(item.id) } })}
                   last={i === items.length - 1}
                 />

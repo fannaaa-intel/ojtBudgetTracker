@@ -19,7 +19,7 @@ export default function EditTransaction() {
     return (
       <Screen
         insetTop={false}
-        title={transfer.toWalletId != null ? 'Wallet transfer' : 'Savings transfer'}
+        title={transfer.savingsGoalId != null ? (transfer.toWalletId != null ? 'Taken out of savings' : 'Savings transfer') : 'Wallet transfer'}
         subtitle={formatDateLabel(transfer.date)}
         footer={
           <Button

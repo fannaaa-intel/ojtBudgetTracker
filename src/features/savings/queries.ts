@@ -8,20 +8,27 @@ import { categories, savingsGoals, transactions } from '@/db/schema';
 import { useDbQuery } from '@/db/useDbQuery';
 import { addDays, todayManila, type ISODate } from '@/lib/dates';
 import { daysBetween } from '@/lib/paySchedule';
-import { EMERGENCY_DAYS, emergencyTarget, goalPct } from '@/lib/savings';
+import { EMERGENCY_DAYS, emergencyTarget, goalPct, goalSaved, withdrawalError } from '@/lib/savings';
 import { getCategoryIdByKey, getDefaultWalletId, notDeleted, sumAmount } from '../transactions/queries';
 
 export type Goal = typeof savingsGoals.$inferSelect;
 export type GoalWithProgress = { goal: Goal; saved: number; pct: number };
 export const SAVINGS_TABLES = ['savings_goals', 'transactions'] as const;
 
-function transfersInto(goalId: number): number {
+/**
+ * Transfers linked to a goal. Into the goal: from a wallet, no `toWalletId`.
+ * Out of the goal (withdrawal): `toWalletId` = the wallet the money went back to.
+ */
+function goalTransfers(goalId: number): { putIn: number; takenOut: number } {
   const row = db
-    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .select({
+      putIn: sql<number>`coalesce(sum(case when ${transactions.toWalletId} is null then ${transactions.amount} else 0 end), 0)`,
+      takenOut: sql<number>`coalesce(sum(case when ${transactions.toWalletId} is not null then ${transactions.amount} else 0 end), 0)`,
+    })
     .from(transactions)
     .where(and(notDeleted(), eq(transactions.kind, 'transfer'), eq(transactions.savingsGoalId, goalId)))
     .get();
-  return Number(row?.total ?? 0);
+  return { putIn: Number(row?.putIn ?? 0), takenOut: Number(row?.takenOut ?? 0) };
 }
 
 export function listGoals(): GoalWithProgress[] {
@@ -31,7 +38,8 @@ export function listGoals(): GoalWithProgress[] {
     .orderBy(sql`${savingsGoals.isEmergencyFund} desc`, asc(savingsGoals.id))
     .all()
     .map((goal) => {
-      const saved = goal.saved + transfersInto(goal.id);
+      const t = goalTransfers(goal.id);
+      const saved = goalSaved(goal.saved, t.putIn, t.takenOut);
       return { goal, saved, pct: goalPct(saved, goal.target) };
     });
 }
@@ -59,6 +67,24 @@ export function deleteGoal(id: number): void {
     tx.update(transactions).set({ savingsGoalId: null }).where(eq(transactions.savingsGoalId, id)).run();
     tx.delete(savingsGoals).where(eq(savingsGoals.id, id)).run();
   });
+}
+
+/**
+ * Take money out of a goal back to Cash: a transfer (never spending), at most what's saved.
+ * Returns the transaction id. Throws if the amount is not allowed.
+ */
+export function takeFromGoal(userId: number, goal: Goal, amount: number, saved: number): number {
+  const err = withdrawalError(amount, saved);
+  if (err) throw new Error(err);
+  // The wallet is what marks this row as "out of the goal"; without one it would read as money in.
+  const cash = getDefaultWalletId();
+  if (cash == null) throw new Error('No wallet to put the money back into');
+  const categoryId = getCategoryIdByKey(goal.isEmergencyFund ? 'savings_emergency' : 'savings_goal') ?? null;
+  return db
+    .insert(transactions)
+    .values({ userId, kind: 'transfer', amount, date: todayManila(), categoryId, walletId: null, toWalletId: cash, savingsGoalId: goal.id, note: `From ${goal.name}` })
+    .returning({ id: transactions.id })
+    .get().id;
 }
 
 /** Put money into a goal (a transfer, not an expense). Returns the transaction id. */

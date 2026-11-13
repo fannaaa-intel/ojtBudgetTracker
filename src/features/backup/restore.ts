@@ -6,7 +6,8 @@
  */
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
-import { expoDb } from '@/db/client';
+import { db, expoDb } from '@/db/client';
+import { topUpSeed } from '@/db/seed';
 import { buildBackup, RESTORE_ORDER, validateBackup, type Backup } from '@/lib/backup';
 import { todayManila } from '@/lib/dates';
 import { parseLabelMode } from '@/lib/labels';
@@ -72,6 +73,8 @@ export function restoreBackup(backup: Backup): void {
   } finally {
     expoDb.execSync('PRAGMA foreign_keys = ON;');
   }
+  // An older backup may lack newer holidays / agency pins: add them back (never overwrites).
+  topUpSeed(db);
   // A restored copy never carries a PIN (that is how "Forgot PIN → erase → restore" gets back in),
   // and the lock / wrong-PIN state starts fresh.
   expoDb.runSync('UPDATE users SET pin_hash = NULL');

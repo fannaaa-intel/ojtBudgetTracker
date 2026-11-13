@@ -34,6 +34,7 @@ export default function CompareRoutes() {
                     <Chip label={time} status="plain" />
                   </>
                 }
+                status={[r.cheapest ? 'Cheapest' : `${formatPeso(r.extraCost)} more`, r.fastest ? 'Fastest' : null, time].filter(Boolean).join(', ')}
                 value={formatPeso(r.cost)}
                 onPress={() => router.push({ pathname: '/routes/[id]', params: { id: String(r.id) } })}
                 last={i === rows.length - 1}

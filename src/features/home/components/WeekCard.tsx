@@ -26,6 +26,7 @@ export function WeekCard() {
             title={`${word} left`}
             subtitle={`of ${formatPeso(p.available)}`}
             right={<StatusChip status={p.status} />}
+            status={p.status === 'over' ? 'Over budget' : p.status === 'near' ? 'Near the limit' : undefined}
             value={p.left >= 0 ? formatPeso(p.left) : `−${formatPeso(-p.left)}`}
             onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: String(p.budget.id) } })}
             last={i === WATCHED.length - 1}

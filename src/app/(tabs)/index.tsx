@@ -52,6 +52,7 @@ export default function Home() {
             subtitle={bills.subtitle}
             value={bills.value}
             right={bills.urgent === 'overdue' ? <Chip label="Overdue" status="inverse" /> : bills.urgent === 'soon' ? <Chip label="Due soon" status="outline" /> : undefined}
+            status={bills.urgent === 'overdue' ? 'Overdue' : bills.urgent === 'soon' ? 'Due soon' : undefined}
             onPress={() => router.push('/bills')}
             last={dueEssentials.length === 0}
           />

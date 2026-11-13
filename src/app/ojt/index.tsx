@@ -52,6 +52,7 @@ export default function OjtLog() {
                   title={formatDateLabel(e.date)}
                   subtitle={subtitle || undefined}
                   right={status ? <Chip label={status} status="plain" /> : <Chip label="Not logged" status="outline" />}
+                  status={status ?? 'Not logged'}
                   value={e.log && e.log.hours > 0 ? fmtHours(e.log.hours) : undefined}
                   onPress={() => router.push({ pathname: '/ojt/[date]', params: { date: e.date } })}
                   last={i === s.timeline.length - 1}

@@ -139,6 +139,22 @@ Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the
 
 ---
 
+## 6b. Phase 4 — real phones and loose ends (STEP 1 Nov 13 → GO → items 1–5 built Nov 13; item 6 waits for an Expo account)
+
+- [x] Seed top-up for installed phones (+ `holidays.region` column, migration 0010; local holidays only for their region): add missing holidays (by date) and agency pins (by code); never touch user-edited fares or meal prices · `src/lib/seedTopUp.ts` + test
+- [x] 2027 holidays: Proclamation 1427 s. 2026 (owner confirmed "save all") + Camarines Norte for the Talisay intern: Sept 28 Vinzons Day (RA 6720) and Feb 1 Panganiban Day (RA 11445, proclaimed yearly). Town fiesta not added (no proclamation found)
+- [x] Agency pins saved (looked up Nov 13 at owner's request; `encodePlusCode` added + tested): ITC Bldg 14.5626, 121.0231 (Waze, building-level) · LANDBANK Plaza 14.5726, 120.9829 (Structurae, building-level) · LGU Talisay 14.1371, 122.9256 (PhilAtlas, town centre — hall is in Poblacion, within a few hundred m) · save lat/lng + derived Plus Codes · test each lies inside its city
+- [x] Savings withdrawals ("Take out" → transfer back to Cash, never spending, ≤ saved) + tests — no schema change (`to_wallet_id` set = out of the goal)
+- [x] Accessibility pass: big text styles capped (display/amountLarge 1.3×, title 1.4×, label 1.6×; body unlimited) · rows read as one sentence with status · row actions for TalkBack (Essentials "Bought") · headers marked · chart rows spoken — **owner to check on the phone (largest font + TalkBack)**
+- [ ] Shareable preview APK via EAS — **setup done Nov 13**: project @sersi07/ojt-budget-tracker linked (`app.json` owner + projectId), `eas.json` preview = APK, `expo-notifications` plugin + white `assets/notification-icon.png`, version 0.2.0 / versionCode 2, `expo-font` added (needed outside Expo Go), SDK patch fixes, `expo-doctor` 20/20. **Waiting: owner runs `npx eas-cli build -p android --profile preview` and installs the APK** (tick when it installs and opens)
+
+- [x] App updates (added Nov 13 at owner's request, **before the first APK**): `expo-updates` / EAS Update, channel `preview`, runtime = app version. Auto check only 8 PM–12 AM Manila when the app is open (max every 30 min) → downloads → "Update ready · Restart" snackbar; Settings → Check for updates any time. CLAUDE.md rule 4 now allows this one exception.
+
+Owner answers (Nov 13): scope 1–6 in order · holidays as above · Expo account later · custom agency stays not allowed (recommended).
+Not now: multiple Beep cards, DB-level test harness, custom agency, promo end (already a switch).
+
+---
+
 ## 7. Reference defaults (already in `src/db/seed/`)
 
 **Fares (NCR, since 2026-09-28)** — traditional jeep ₱14 first 4 km + ₱2/km (student ₱11.25) · modern jeep ₱17 + ₱2.40/km · city bus ordinary ₱15 first 5 km + ₱2.49/km · aircon/EDSA Carousel ₱18 + ₱2.98/km · UV ₱2.60 / ₱3.00 per km (provisional) · LRT-1 ₱16.25 + ₱1.47/km · LRT-2/MRT-3 station matrix with 50% promo · tricycle per LGU · Grab actual.
@@ -150,7 +166,7 @@ Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the
 
 ## 8. Open questions
 
-- [ ] Google Maps pin / Plus Code for **LGU Talisay, ITC Bldg, LANDBANK Plaza** (only NFRDI is known) → fill `src/db/seed/agencies.ts`
+- [x] Google Maps pin / Plus Code for **LGU Talisay, ITC Bldg, LANDBANK Plaza** → filled Nov 13, 2026 (Talisay = town centre; replace with the hall's exact pin if the intern sends one)
 - [ ] Required OJT hours per intern (each enters it in onboarding or Settings)
 - [ ] Custom agency option for interns not in the list? (currently not allowed)
 - [ ] When the LRT-2/MRT-3 50% promo ends → switch `promo_pct` to 0 for `lrt2`, `mrt3`

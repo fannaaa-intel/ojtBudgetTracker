@@ -72,7 +72,7 @@ export function BarChart({ points, height = 120, accessibilityLabel }: Props) {
 export function HBarRow({ name, value, pct, fraction, strong, index = 0 }: { name: string; value: string; pct: number; fraction: number; strong?: boolean; index?: number }) {
   const { spacing } = useTheme();
   return (
-    <View style={{ gap: spacing.sm, paddingVertical: spacing.sm }}>
+    <View accessible accessibilityLabel={`${name}, ${value}, ${pct} percent`} style={{ gap: spacing.sm, paddingVertical: spacing.sm }}>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: spacing.md }}>
         <AppText style={{ flex: 1, fontWeight: strong ? '600' : '400' }} numberOfLines={2}>
           {name}

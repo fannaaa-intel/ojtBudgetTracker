@@ -83,6 +83,23 @@ export function decodePlusCode(input: string, reference?: LatLng): LatLng | null
   return { lat, lng };
 }
 
+/**
+ * Encode a point as a full 11-character Plus Code ("7Q63M24X+CHV", ~3 × 3 m).
+ * Integer maths in grid units (lat 1/40000°, lng 1/32000°) so float error never flips a digit.
+ */
+export function encodePlusCode(lat: number, lng: number): string {
+  const la = Math.floor((Math.min(Math.max(lat, -90), 90 - 1e-10) + 90) * 40000 + 1e-6);
+  const lo = Math.floor(((((lng + 180) % 360) + 360) % 360) * 32000 + 1e-6);
+  const LAT_UNITS = [800000, 40000, 2000, 100, 5];
+  const LNG_UNITS = [640000, 32000, 1600, 80, 4];
+  let code = '';
+  for (let i = 0; i < 5; i++) {
+    code += ALPHABET.charAt(Math.floor(la / (LAT_UNITS.at(i) as number)) % 20) + ALPHABET.charAt(Math.floor(lo / (LNG_UNITS.at(i) as number)) % 20);
+    if (i === 3) code += '+';
+  }
+  return code + ALPHABET.charAt((la % 5) * 4 + (lo % 4));
+}
+
 /** Accepts "14.656, 121.049", a Google Maps URL containing "@14.6,121.0", or a Plus Code. */
 export function parseLocation(input: string, reference?: LatLng): LatLng | null {
   const at = input.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);

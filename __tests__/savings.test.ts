@@ -1,4 +1,19 @@
-import { emergencyTarget, goalPct, validateGoal, weeklyToReach } from '../src/lib/savings';
+import { emergencyTarget, goalPct, goalSaved, validateGoal, weeklyToReach, withdrawalError } from '../src/lib/savings';
+
+describe('savings withdrawals', () => {
+  it('saved = opening + in − out, never negative', () => {
+    expect(goalSaved(500_00, 1500_00, 300_00)).toBe(1700_00);
+    expect(goalSaved(0, 100_00, 100_00)).toBe(0);
+    expect(goalSaved(0, 100_00, 250_00)).toBe(0);
+  });
+  it('allows taking out up to what is saved', () => {
+    expect(withdrawalError(300_00, 1700_00)).toBeNull();
+    expect(withdrawalError(1700_00, 1700_00)).toBeNull();
+    expect(withdrawalError(1700_01, 1700_00)).toMatch(/more than/);
+    expect(withdrawalError(0, 1700_00)).toMatch(/more than ₱0/);
+    expect(withdrawalError(-5, 1700_00)).not.toBeNull();
+  });
+});
 
 describe('savings', () => {
   it('progress percent, capped', () => {

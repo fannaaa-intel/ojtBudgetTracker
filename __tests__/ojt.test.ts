@@ -1,4 +1,5 @@
 import { HOLIDAY_SEED } from '../src/db/seed/holidays';
+import { holidaysFor } from '../src/lib/seedTopUp';
 import {
   daysWorked,
   hoursDone,
@@ -11,7 +12,8 @@ import {
   type OjtLog,
 } from '../src/lib/ojt';
 
-const holidays = new Map(HOLIDAY_SEED.map((h) => [h.date, h.name]));
+const ncrHolidays = holidaysFor(HOLIDAY_SEED, 'NCR');
+const holidays = new Map(ncrHolidays.map((h) => [h.date, h.name]));
 const MON_FRI = [1, 2, 3, 4, 5];
 const logs = (...l: OjtLog[]) => new Map(l.map((x) => [x.date, x]));
 
@@ -49,7 +51,7 @@ describe('ojtProjection', () => {
     hoursPerDay: 5,
     fromDate: '2026-11-09',
     workdays: MON_FRI,
-    holidays: new Set(HOLIDAY_SEED.map((h) => h.date)),
+    holidays: new Set(ncrHolidays.map((h) => h.date)),
   };
 
   it('300 h from Nov 9, 2026 at 5 h/day ends Feb 9, 2027 (60 workdays)', () => {

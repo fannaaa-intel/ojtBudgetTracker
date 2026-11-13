@@ -9,8 +9,11 @@ import {
   weekday,
 } from '../src/lib/dates';
 import { HOLIDAY_SEED } from '../src/db/seed/holidays';
+import { holidaysFor } from '../src/lib/seedTopUp';
 
-const holidays = new Set(HOLIDAY_SEED.map((h) => h.date));
+// Metro Manila interns: national holidays only (Camarines Norte local days excluded).
+const holidays = new Set(holidaysFor(HOLIDAY_SEED, 'NCR').map((h) => h.date));
+const bicolHolidays = new Set(holidaysFor(HOLIDAY_SEED, 'REGION_V').map((h) => h.date));
 const MON_FRI = [1, 2, 3, 4, 5];
 
 describe('dates', () => {
@@ -22,6 +25,9 @@ describe('dates', () => {
   });
   it('projects the end date for 300 h at 5 h/day from Nov 9, 2026', () => {
     expect(projectEndDate('2026-11-09', 300, 5, MON_FRI, holidays)).toBe('2027-02-09');
+  });
+  it('Talisay intern ends one workday later (Feb 1 Panganiban Day is a Monday)', () => {
+    expect(projectEndDate('2026-11-09', 300, 5, MON_FRI, bicolHolidays)).toBe('2027-02-10');
   });
   it('weeks start on Monday', () => {
     expect(startOfWeek('2026-11-15')).toBe('2026-11-09');
