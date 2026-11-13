@@ -20,6 +20,9 @@ Read in this order: **CLAUDE.md** (rules) → **plan.md** (decisions + checklist
 - Ask before changing any decision in plan.md. Recommendations are welcome; the owner usually accepts them.
 - **Commit/push only when asked.** Commit messages go through a file (`git commit -F <file>`) —
   PowerShell here-strings piped to `-F -` do not work.
+- **"Update immediately" / "I am the dev, don't worry"** (owner, 2026-11-13) = skip the STEP 1
+  report for that revision: build it, run typecheck + tests + doctor + bundle, update plan.md /
+  HANDOFF, commit + push, and ship it (EAS Update, or a fresh APK if the owner asks for one).
 - Design: minimalist monochrome (theme tokens only), no ripple anywhere, one primary button per
   screen, 48 px targets, light + dark, Taglish labels via `useLabels()`.
 
@@ -44,6 +47,11 @@ Revisions after the APK are normally shipped as EAS Updates (see §3 item 4) and
 §6b "Revisions after the first APK". 2026-11-13: usual trip per route + keyboard fix (whole app) —
 the owner chose a **fresh APK (versionCode 4)** for these instead of an update; they reinstall it and
 replace the file in their Google Drive folder (same folder link → the video QR stays valid).
+**Build 4:** commit `50476e8`, EAS build `08253c7f-9695-4560-91ef-183a544383a0`
+(https://expo.dev/accounts/sersi07/projects/ojt-budget-tracker/builds/08253c7f-9695-4560-91ef-183a544383a0),
+started 2026-11-13. Get the direct APK link with
+`npx eas-cli build:view 08253c7f-9695-4560-91ef-183a544383a0 --json` → `artifacts.buildUrl`.
+Build 3 (`29b32882-…`) is superseded — Drive should hold build 4.
 Keyboard handling lives in `src/components/Screen.tsx` — any new input must use `TextField` (or call
 `useRevealFocusedInput()` on focus) and any new screen must use `Screen`, or the keyboard can cover it.
 
@@ -182,7 +190,9 @@ owner checks are listed in each.
   STEP 1 report** (no code), then wait.
 - **Current state (2026-11-13): Phase 4 committed + pushed (`1fd101b`), real APK built.**
   **Next GO = make the tutorial video** (§3 item 5): the owner pastes the 13 screenshots (FINAL
-  shot list in §3 item 5) and says GO. Use the saved Google Drive folder link for the end-card QR.
+  shot list in §3 item 5) and says GO. The owner already took the screenshots on 2026-11-13 (some
+  may be from APK build 3, before the "Usual trip" chips — that's fine, use them as they are).
+  First confirm build 4 installed OK (tick §6b item 6) if the owner hasn't said so. Use the saved Google Drive folder link for the end-card QR.
   Ask about ffmpeg first if it's still not installed (fallback: animated GIF with ImageMagick).
   Before building, confirm the Drive folder opens without login (owner was asked to check it). Deliver the video file path + a short
   report, then STOP.
