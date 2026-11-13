@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { AppText, Button, Chip, ChipRow, Screen, Section, TextField, ToggleRow } from '@/components';
+import { AnimatedAmount, AppText, Button, Chip, ChipRow, Screen, Section, TextField, ToggleRow } from '@/components';
 import { BillStatusChip } from '@/features/bills/components/BillRow';
 import { getPayment, markBillPaid, remarkBillPaid, unmarkBillPaid, useBillsThisMonth } from '@/features/bills/queries';
 import { useProfile } from '@/features/profile/queries';
@@ -71,14 +71,17 @@ export default function PayBill() {
     <Screen
       insetTop={false}
       title={b.bill.name}
-      subtitle={`${formatDateLabel(b.dueDate)} · ${billStatusLabel(b.status, today, b.dueDate)}`}
+      subtitle={`Due ${formatDateLabel(b.dueDate)}`}
       footer={b.payment ? undefined : <Button label="Mark as paid" onPress={pay} />}
     >
       <BillStatusChip status={b.status} label={billStatusLabel(b.status, today, b.dueDate)} />
       {b.payment ? (
         <View style={{ gap: spacing.sm }}>
-          <AppText variant="amountLarge">{formatPeso(b.payment.amount)}</AppText>
-          <AppText tone="secondary">Paid on {formatDateLabel(b.payment.paidAt ?? b.dueDate)} — logged as an expense.</AppText>
+          <AnimatedAmount value={b.payment.amount} variant="amountLarge" />
+          <AppText tone="secondary">Paid on {formatDateLabel(b.payment.paidAt ?? b.dueDate)}</AppText>
+          <AppText variant="caption" tone="muted">
+            Logged as an expense.
+          </AppText>
           <Button label="Mark as unpaid" variant="secondary" onPress={undoPaid} />
         </View>
       ) : (
@@ -98,7 +101,7 @@ export default function PayBill() {
               />
               <AppText variant="caption" tone="muted">
                 {rate.rate != null
-                  ? `Estimate: kWh × ${formatPeso(rate.rate)}/kWh${rate.isDefault ? ' (default)' : ''}. Use the amount on your bill if it differs.`
+                  ? `Estimate at ${formatPeso(rate.rate)} per kWh${rate.isDefault ? ' (default)' : ''}. Use your bill's amount if it differs.`
                   : 'Set your electric co-op’s rate to estimate from kWh.'}
               </AppText>
               <Button label={rate.rate != null ? 'Change rate' : 'Set electricity rate'} variant="ghost" onPress={() => router.push('/settings/electricity')} />
@@ -123,17 +126,27 @@ export default function PayBill() {
               </ChipRow>
             </View>
           ) : null}
-          <AppText variant="caption" tone="muted">Logged as an expense today for the amount you paid. Changing the bill later never changes this.</AppText>
+          <AppText variant="caption" tone="muted">
+            Logged today for what you paid. Editing the bill later never changes it.
+          </AppText>
         </>
       )}
 
       {isSplit ? (
-        <Section title={`Split · your share ${parts ? formatPeso(parts.mine) : '—'}`}>
+        <Section
+          title="Split"
+          icon="people-outline"
+          action={
+            <AppText variant="caption" tone="secondary">
+              Your share {parts ? formatPeso(parts.mine) : '—'}
+            </AppText>
+          }
+        >
           {split.shares.map((s, i) => (
             <View key={s.roommateId} style={{ paddingVertical: spacing.xs, borderBottomWidth: 0 }}>
               <ToggleRow
-                label={`${s.name} · ${formatPeso(shareOf(s.roommateId))}`}
-                description={split.paid.has(s.roommateId) ? 'Paid their share this month' : 'Not paid yet'}
+                label={`${s.name}, ${formatPeso(shareOf(s.roommateId))}`}
+                description={split.paid.has(s.roommateId) ? 'Paid this month' : 'Not paid yet'}
                 value={split.paid.has(s.roommateId)}
                 onChange={(v) => setSharePaid(b.bill.id, s.roommateId, b.period, v, today)}
               />

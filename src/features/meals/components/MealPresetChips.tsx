@@ -26,7 +26,7 @@ export function MealPresetChips({ region, userId }: { region: Region; userId: nu
   }
 
   return (
-    <View style={{ gap: spacing.sm }}>
+    <View style={{ gap: spacing.md }}>
       <ChipRow>
         {presets.map((p) => (
           <Chip
@@ -40,7 +40,7 @@ export function MealPresetChips({ region, userId }: { region: Region; userId: nu
         ))}
       </ChipRow>
       <AppText variant="caption" tone="muted">
-        Tap to log for today. Long-press to change a price.
+        Tap to log. Hold to change a price.
       </AppText>
       <AmountPrompt
         visible={prompt != null}

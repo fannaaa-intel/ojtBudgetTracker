@@ -1,5 +1,9 @@
 export { AmountPrompt } from './AmountPrompt';
+export { AnimatedAmount } from './AnimatedAmount';
+export { Appear } from './Appear';
 export { AppText } from './AppText';
+export { EmptyState } from './EmptyState';
+export { IconBadge, type IconName } from './IconBadge';
 export { BarChart, HBarRow } from './BarChart';
 export { Button } from './Button';
 export { Chip, ChipRow } from './Chip';
@@ -14,6 +18,7 @@ export { Snackbar } from './Snackbar';
 export { useStackOptions } from './stackOptions';
 export { StepIndicator } from './StepIndicator';
 export { TextField } from './TextField';
-export { ThemeFade } from './ThemeFade';
+export { ThemeFade, transitionTheme } from './ThemeFade';
 export { ThemeSync } from './ThemeSync';
 export { ToggleRow } from './ToggleRow';
+export { reduceMotionNow, useReduceMotion } from './useReduceMotion';

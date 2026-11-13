@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
-import { AppText, Button, Chip, ListRow, Screen, Section } from '@/components';
-import { useBeepState } from '@/features/wallets/queries';
-import { formatPeso } from '@/lib/money';
+import { Appear, AppText, Button, Chip, ListRow, Screen, Section } from '@/components';
 import { FaresCheckedBanner, useFaresCheckedLabel } from '@/features/commute/components/FaresCheckedBanner';
 import { RouteList } from '@/features/commute/components/RouteList';
 import { useFareCheck, useRoutes } from '@/features/commute/queries';
 import { useProfile } from '@/features/profile/queries';
+import { useBeepState } from '@/features/wallets/queries';
+import { formatPeso } from '@/lib/money';
 
 export default function Commute() {
   const profile = useProfile();
@@ -17,25 +17,35 @@ export default function Commute() {
 
   return (
     <Screen title="Commute" subtitle={due ? undefined : checked}>
-      {due ? <FaresCheckedBanner region={profile.user.region} /> : null}
-      <RouteList routes={routes} isStudent={profile.user.isStudent} />
+      {due ? (
+        <Appear>
+          <FaresCheckedBanner region={profile.user.region} />
+        </Appear>
+      ) : null}
+      <Appear index={1}>
+        <RouteList routes={routes} isStudent={profile.user.isStudent} />
+      </Appear>
       <Button label="New route" onPress={() => router.push({ pathname: '/routes/[id]', params: { id: 'new' } })} />
       <AppText variant="caption" tone="muted">
-        Amounts shown are round trips{profile.user.isStudent ? ' with your student discount' : ''}.
+        Round-trip fares{profile.user.isStudent ? ', student discount included' : ''}.
       </AppText>
-      <Section>
-        {beep ? (
-          <ListRow
-            title="Beep card"
-            subtitle={beep.beep ? `${formatPeso(beep.balance)} on the card` : 'Add your card to pay trains and the Carousel'}
-            right={beep.low ? <Chip label="Low" status="inverse" /> : undefined}
-            onPress={() => router.push('/wallets/beep')}
-          />
-        ) : null}
-        {routes.length >= 2 ? <ListRow title="Compare routes" subtitle="Cost vs minutes, cheapest and fastest" onPress={() => router.push('/routes/compare')} /> : null}
-        <ListRow title="Fare table" subtitle="See and edit the fares used for your routes" onPress={() => router.push('/fares')} />
-        <ListRow title="Update fares" subtitle="After a fare hike — edit a whole mode at once" onPress={() => router.push('/fares/update')} last />
-      </Section>
+      <Appear index={2}>
+        <Section title="Fares and cards" icon="card-outline">
+          {beep ? (
+            <ListRow
+              icon="card-outline"
+              title="Beep card"
+              subtitle={beep.beep ? 'Balance on the card' : 'For trains and the Carousel'}
+              value={beep.beep ? formatPeso(beep.balance) : undefined}
+              right={beep.low ? <Chip label="Low" status="inverse" /> : undefined}
+              onPress={() => router.push('/wallets/beep')}
+            />
+          ) : null}
+          {routes.length >= 2 ? <ListRow icon="git-compare-outline" title="Compare routes" subtitle="Cheapest vs fastest" onPress={() => router.push('/routes/compare')} /> : null}
+          <ListRow icon="pricetags-outline" title="Fare table" subtitle="See and edit fares" onPress={() => router.push('/fares')} />
+          <ListRow icon="trending-up-outline" title="Update fares" subtitle="After a fare hike" onPress={() => router.push('/fares/update')} last />
+        </Section>
+      </Appear>
     </Screen>
   );
 }

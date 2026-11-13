@@ -123,6 +123,22 @@ Acceptance: an intern can register, set up their route once, log a full day (com
 
 ---
 
+## 6a. UI pass — space and motion (owner request Nov 12, 2026; follows HANDOFF §6)
+
+STEP 1 report Nov 13, 2026 → GO → built Nov 13 (items 1–7). No new packages (RN `Animated`), no schema change.
+Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the OJT screen · motion on first mount only · Today card shows top 3 categories as rows · More tab = icon + title + one short line. Welcome screen showcase added at owner's request.
+
+- [x] Motion foundation: `src/lib/motion.ts` (durations, easing, stagger, count-up maths) + test · shared `useReduceMotion()` hook
+- [x] New shared pieces: `Appear` (fade + rise, stagger), `AnimatedAmount` (count-up), `IconBadge`, `EmptyState`
+- [x] Upgrade shared pieces: ListRow (icon, press-shrink, no font shrinking, 1-line subtitle), Section spacing, animated ProgressBar / BarChart / HBarRow, press-shrink Chip / Button, Snackbar slides up
+- [x] Welcome (Get started) as a showcase: hero, animated app preview (amounts from seeded `meal_presets`, never hardcoded), swipeable feature slides with page dots, trust pills
+- [x] Tab screens: Home, Add, Commute, Budget, More
+- [x] List screens: History, Reports, OJT, Bills, Income, Savings, Essentials, Grocery, Utang, Barkada, Beep, Settings
+- [x] Detail / form screens: trim copy, replace "·"-joined subtitles (code pass done; **owner to check on the phone at 360 dp + 130% font**)
+- [ ] Theme cross-fade tuning (`ThemeFade.tsx`) — kept at 450 ms; **waiting for owner feedback**
+
+---
+
 ## 7. Reference defaults (already in `src/db/seed/`)
 
 **Fares (NCR, since 2026-09-28)** — traditional jeep ₱14 first 4 km + ₱2/km (student ₱11.25) · modern jeep ₱17 + ₱2.40/km · city bus ordinary ₱15 first 5 km + ₱2.49/km · aircon/EDSA Carousel ₱18 + ₱2.98/km · UV ₱2.60 / ₱3.00 per km (provisional) · LRT-1 ₱16.25 + ₱1.47/km · LRT-2/MRT-3 station matrix with 50% promo · tricycle per LGU · Grab actual.

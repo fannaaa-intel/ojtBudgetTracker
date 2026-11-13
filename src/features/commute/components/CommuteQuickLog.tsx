@@ -32,7 +32,7 @@ export function CommuteQuickLog() {
   if (!profile || !route) {
     return (
       <View style={{ gap: spacing.md }}>
-        <AppText tone="secondary">Set up your daily route once on the Commute tab, then log the round trip here in one tap.</AppText>
+        <AppText tone="secondary">Save your daily route once, then log it here in one tap.</AppText>
         <Button label="Set up my route" onPress={() => router.push({ pathname: '/routes/[id]', params: { id: 'new' } })} />
       </View>
     );
@@ -81,7 +81,7 @@ export function CommuteQuickLog() {
       ) : null}
       {canBeep && payBeep && beep!.low ? <AppText variant="caption">Beep card is low: {formatPeso(beep!.balance)} left.</AppText> : null}
       {logged > 0 ? <AppText variant="caption" tone="muted">Logged {logged === 1 ? 'once' : `${logged}×`} today.</AppText> : null}
-      <Button label={`Log today’s commute · ${formatPeso(amount)}`} onPress={onPress} />
+      <Button label={`Log commute, ${formatPeso(amount)}`} accessibilityLabel={`Log today's commute, ${formatPeso(amount)}`} onPress={onPress} />
     </View>
   );
 }

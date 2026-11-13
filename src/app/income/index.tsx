@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { AppText, Button, ListRow, Screen, Section } from '@/components';
+import { Appear, AppText, Button, EmptyState, IconBadge, ListRow, Screen, Section } from '@/components';
 import { useNextAllowanceLabel } from '@/features/income/components/NextAllowance';
 import { useIncomeSources } from '@/features/income/queries';
 import { formatDateLabel, todayManila } from '@/lib/dates';
@@ -19,30 +19,39 @@ export default function IncomeSources() {
     <Screen
       insetTop={false}
       title="Income & allowance"
-      subtitle="Baon, padala, stipend — and when each one arrives."
+      subtitle="When each one arrives."
       footer={<Button label="Add income source" onPress={() => router.push({ pathname: '/income/[id]', params: { id: 'new' } })} />}
     >
       {next ? (
-        <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: 2 }}>
-          <AppText variant="heading">{next.title}</AppText>
-          <AppText variant="caption" tone="secondary">{next.detail}</AppText>
-        </View>
+        <Appear grow>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg }}>
+            <IconBadge name="calendar-outline" />
+            <View style={{ flex: 1, gap: 2 }}>
+              <AppText variant="heading">{next.title}</AppText>
+              <AppText variant="caption" tone="secondary">
+                {next.detail}
+              </AppText>
+            </View>
+            <AppText variant="amount">{next.amount}</AppText>
+          </View>
+        </Appear>
       ) : null}
       {sources.length === 0 ? (
-        <AppText tone="secondary">No sources yet. Add your weekly baon or monthly stipend to see how many days until it arrives.</AppText>
+        <EmptyState icon="wallet-outline" message="Add your weekly baon or monthly stipend." />
       ) : (
-        <Section title="Sources">
+        <Section title="Sources" icon="wallet-outline">
           {sources.map((s, i) => {
             const d = nextPayDate(s.frequency, s.nextDate, today);
             return (
-              <ListRow
-                key={s.id}
-                title={s.name}
-                subtitle={`${PAY_FREQUENCY_LABEL[s.frequency]} · ${d ? `next ${formatDateLabel(d)}` : 'no upcoming date'}`}
-                value={formatPeso(s.amount)}
-                onPress={() => router.push({ pathname: '/income/[id]', params: { id: String(s.id) } })}
-                last={i === sources.length - 1}
-              />
+              <Appear key={s.id} index={i} rise={6}>
+                <ListRow
+                  title={s.name}
+                  subtitle={d ? `${PAY_FREQUENCY_LABEL[s.frequency]}, next ${formatDateLabel(d)}` : PAY_FREQUENCY_LABEL[s.frequency]}
+                  value={formatPeso(s.amount)}
+                  onPress={() => router.push({ pathname: '/income/[id]', params: { id: String(s.id) } })}
+                  last={i === sources.length - 1}
+                />
+              </Appear>
             );
           })}
         </Section>

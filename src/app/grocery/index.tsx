@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { AmountPrompt, AppText, Button, Chip, ListRow, Screen, Section } from '@/components';
+import { AmountPrompt, Appear, AppText, Button, Chip, EmptyState, ListRow, Screen, Section } from '@/components';
 import { finishTrip, setInCart, setOnList, useGrocery, type GroceryItem } from '@/features/grocery/queries';
 import { requireUserId } from '@/features/profile/queries';
 import { todayManila } from '@/lib/dates';
@@ -28,11 +28,11 @@ export default function Grocery() {
     <Screen
       insetTop={false}
       title="Grocery list"
-      subtitle="Prices are remembered so you can see when they go up."
+      subtitle="Remembers prices so you see when they go up."
       footer={
         cart.length > 0 ? (
           <Button
-            label={`Done shopping · ${formatPeso(total)}`}
+            label={`Done shopping, ${formatPeso(total)}`}
             onPress={() => {
               const r = finishTrip(requireUserId());
               if (r) showSnack(`Groceries ${formatPeso(r.total)} logged (${r.count} items)`, { label: 'Undo', onPress: r.undo });
@@ -43,27 +43,29 @@ export default function Grocery() {
         )
       }
     >
-      <Section title={`To buy · ${list.length}`} action={cart.length ? <AppText variant="caption" tone="secondary">{cart.length} in cart</AppText> : undefined}>
-        {list.length === 0 ? <ListRow title="Your list is empty" subtitle="Add items below or tap “Add an item”" last /> : null}
+      <Section title={`To buy (${list.length})`} icon="cart-outline" action={cart.length ? <Chip label={`${cart.length} in cart`} status="outline" /> : undefined}>
+        {list.length === 0 ? <EmptyState icon="cart-outline" message="Your list is empty." /> : null}
         {list.map(({ item }, i) => {
           const note = item.inCart ? priceNote(item.lastPrice, item.cartPrice) : item.lastPrice ? `Last time ${formatPeso(item.lastPrice)}` : 'No price yet';
           return (
-            <ListRow
-              key={item.id}
-              title={`${item.inCart ? '✓ ' : ''}${item.name}`}
-              subtitle={note ?? undefined}
-              right={item.inCart && priceWentUp(item.lastPrice, item.cartPrice) ? <Chip label="Price up" status="outline" /> : undefined}
-              value={item.inCart && item.cartPrice ? formatPeso(item.cartPrice) : undefined}
-              onPress={() => (item.inCart ? setInCart(item.id, null) : setPricing(item))}
-              last={i === list.length - 1}
-            />
+            <Appear key={item.id} index={i} rise={6}>
+              <ListRow
+                icon={item.inCart ? 'checkmark-circle-outline' : 'ellipse-outline'}
+                title={item.name}
+                subtitle={note ?? undefined}
+                right={item.inCart && priceWentUp(item.lastPrice, item.cartPrice) ? <Chip label="Price up" status="outline" /> : undefined}
+                value={item.inCart && item.cartPrice ? formatPeso(item.cartPrice) : undefined}
+                onPress={() => (item.inCart ? setInCart(item.id, null) : setPricing(item))}
+                last={i === list.length - 1}
+              />
+            </Appear>
           );
         })}
       </Section>
-      {list.length > 0 ? <AppText variant="caption" tone="muted">Tap an item to put it in the cart with its price. Tap again to take it out.</AppText> : null}
+      {list.length > 0 ? <AppText variant="caption" tone="muted">Tap to put it in the cart. Tap again to take it out.</AppText> : null}
 
       {staples.length > 0 ? (
-        <Section title="Staples">
+        <Section title="Staples" icon="hourglass-outline">
           {staples.map(({ item, due, status }, i) => (
             <ListRow
               key={item.id}
@@ -79,12 +81,12 @@ export default function Grocery() {
       ) : null}
 
       {others.length > 0 ? (
-        <Section title="Add back to the list">
+        <Section title="Add back to the list" icon="refresh-outline">
           {others.map(({ item }, i) => (
             <ListRow
               key={item.id}
               title={item.name}
-              subtitle={item.lastPrice ? `Last ${formatPeso(item.lastPrice)}${item.prevPrice ? ` · before ${formatPeso(item.prevPrice)}` : ''}` : undefined}
+              subtitle={item.lastPrice ? `Last ${formatPeso(item.lastPrice)}` : undefined}
               value="+ List"
               onPress={() => setOnList(item.id, true)}
               last={i === others.length - 1}

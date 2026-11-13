@@ -1,10 +1,18 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { AmountPrompt, AppText, Button, Chip, ListRow, Screen, Section } from '@/components';
+import { AmountPrompt, Appear, AppText, Button, Chip, EmptyState, ListRow, Screen, Section, type IconName } from '@/components';
 import { markBought, useEssentials, type Essential } from '@/features/essentials/queries';
 import { requireUserId } from '@/features/profile/queries';
 import { todayManila } from '@/lib/dates';
-import { ESSENTIAL_KINDS, essentialStatusLabel, type EssentialStatus } from '@/lib/essentials';
+import { ESSENTIAL_KINDS, essentialStatusLabel, type EssentialKind, type EssentialStatus } from '@/lib/essentials';
+
+const KIND_ICON: Record<EssentialKind, IconName> = {
+  restock: 'water-outline',
+  laundry: 'shirt-outline',
+  load: 'phone-portrait-outline',
+  health: 'medkit-outline',
+  grooming: 'cut-outline',
+};
 import { formatPeso } from '@/lib/money';
 import { showSnack } from '@/store/snackbar';
 
@@ -24,35 +32,41 @@ export default function Essentials() {
     <Screen
       insetTop={false}
       title="Essentials"
-      subtitle="Things that run out or expire. Tap “Bought” to log it and restart the countdown."
+      subtitle="Tap “Bought” to restart the countdown."
       footer={<Button label="Add an item" onPress={() => router.push({ pathname: '/essentials/[id]', params: { id: 'new' } })} />}
     >
       {items.length === 0 ? (
-        <AppText tone="secondary">Nothing yet. Add shampoo, laundry, your data promo, vitamins or a haircut.</AppText>
+        <EmptyState icon="basket-outline" message="Shampoo, laundry, data promo, vitamins, a haircut." />
       ) : (
         <Section>
           {items.map(({ item, due, status }, i) => {
             const label = essentialStatusLabel(today, due, item.kind);
             const kind = ESSENTIAL_KINDS.find((k) => k.kind === item.kind)?.label;
+            const quiet = status === 'ok' || status === 'never';
             return (
-              <ListRow
-                key={item.id}
-                title={item.name}
-                subtitle={[kind, status === 'ok' || status === 'never' ? label : null, item.typicalPrice ? formatPeso(item.typicalPrice) : null].filter(Boolean).join(' · ')}
-                right={
-                  <>
-                    <StatusChip status={status} label={label} />
-                    <Button label="Bought" variant="secondary" onPress={() => setBuying(item)} />
-                  </>
-                }
-                onPress={() => router.push({ pathname: '/essentials/[id]', params: { id: String(item.id) } })}
-                last={i === items.length - 1}
-              />
+              <Appear key={item.id} index={i} rise={6}>
+                <ListRow
+                  icon={KIND_ICON[item.kind] ?? 'ellipse-outline'}
+                  title={item.name}
+                  subtitle={quiet ? label : kind}
+                  value={item.typicalPrice ? formatPeso(item.typicalPrice) : undefined}
+                  right={
+                    <>
+                      <StatusChip status={status} label={label} />
+                      <Button label="Bought" variant="secondary" onPress={() => setBuying(item)} style={{ minHeight: 48 }} />
+                    </>
+                  }
+                  onPress={() => router.push({ pathname: '/essentials/[id]', params: { id: String(item.id) } })}
+                  last={i === items.length - 1}
+                />
+              </Appear>
             );
           })}
         </Section>
       )}
-      <AppText variant="caption" tone="muted">For one-time OJT requirements (medical, NBI, uniform), use Add expense and turn on “One-time OJT requirement”.</AppText>
+      <AppText variant="caption" tone="muted">
+        One-time OJT requirements (medical, NBI, uniform) go in Add expense.
+      </AppText>
       <AmountPrompt
         visible={buying != null}
         title={`Bought ${buying?.name ?? ''}`}

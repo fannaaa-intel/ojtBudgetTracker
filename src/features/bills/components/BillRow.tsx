@@ -19,7 +19,7 @@ export function BillRow({ b, last }: { b: BillThisMonth; last?: boolean }) {
   return (
     <ListRow
       title={b.bill.name}
-      subtitle={b.status === 'upcoming' ? label : `Due day ${b.bill.dueDay}${b.bill.isVariable ? ' · varies' : ''}`}
+      subtitle={b.status === 'upcoming' ? label : `Due day ${b.bill.dueDay}`}
       right={<BillStatusChip status={b.status} label={label} />}
       value={amount > 0 ? formatPeso(amount) : undefined}
       onPress={() => router.push({ pathname: '/bills/pay/[id]', params: { id: String(b.bill.id) } })}

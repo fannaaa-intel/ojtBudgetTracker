@@ -48,8 +48,9 @@ export function RestoreRow({ last }: { last?: boolean }) {
 
   return (
     <ListRow
+      icon="cloud-download-outline"
       title="Restore from backup"
-      subtitle="Replace all data with a backup file"
+      subtitle="Replaces all data on this phone"
       right={busy ? <ActivityIndicator color={colors.text} /> : undefined}
       onPress={run}
       last={last}

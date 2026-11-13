@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
-import { AppText, Chip, ProgressBar } from '@/components';
+import { Animated, Pressable, View } from 'react-native';
+import { AnimatedAmount, AppText, Chip, ProgressBar } from '@/components';
+import { usePressScale } from '@/components/usePressScale';
 import type { BudgetStatus } from '@/lib/budget';
+import { staggerDelay } from '@/lib/motion';
 import { formatPeso } from '@/lib/money';
 import { useLabels } from '@/store/labels';
 import { useTheme } from '@/theme';
@@ -14,34 +16,45 @@ export function StatusChip({ status, onInverse }: { status: BudgetStatus; onInve
   return null;
 }
 
-export function BudgetEnvelope({ p, last }: { p: BudgetProgress; last?: boolean }) {
+export function BudgetEnvelope({ p, last, index = 0 }: { p: BudgetProgress; last?: boolean; index?: number }) {
   const { colors, spacing } = useTheme();
   const { cat } = useLabels();
+  const press = usePressScale(0.98);
   return (
     <Pressable
       accessibilityRole="button"
       onPress={() => router.push({ pathname: '/budgets/[id]', params: { id: String(p.budget.id) } })}
-      style={({ pressed }) => ({ paddingVertical: spacing.md, gap: spacing.sm, borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.border, opacity: pressed ? 0.6 : 1 })}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={{ borderBottomWidth: last ? 0 : 1, borderBottomColor: colors.border }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
-        <View style={{ flex: 1, gap: spacing.xs }}>
-          <AppText variant="heading" numberOfLines={2}>
-            {cat(p.categoryKey, p.name)}
-          </AppText>
-          <StatusChip status={p.status} />
-        </View>
-        <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
-          <AppText variant="amount">{formatPeso(Math.abs(p.left))}</AppText>
+      {({ pressed }) => (
+        <Animated.View style={[{ paddingVertical: spacing.lg, gap: spacing.md, opacity: pressed ? 0.7 : 1 }, press.style]}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
+            <View style={{ flex: 1, gap: spacing.xs }}>
+              <AppText variant="heading" numberOfLines={2}>
+                {cat(p.categoryKey, p.name)}
+              </AppText>
+              <StatusChip status={p.status} />
+            </View>
+            <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+              <AnimatedAmount value={Math.abs(p.left)} />
+              <AppText variant="caption" tone="secondary">
+                {p.left >= 0 ? 'left' : 'over'}
+              </AppText>
+            </View>
+          </View>
+          <ProgressBar pct={p.pct} delay={staggerDelay(index)} />
           <AppText variant="caption" tone="secondary">
-            {p.left >= 0 ? 'left' : 'over'}
+            {formatPeso(p.spent)} of {formatPeso(p.available)}
           </AppText>
-        </View>
-      </View>
-      <ProgressBar pct={p.pct} />
-      <AppText variant="caption" tone="secondary">
-        {formatPeso(p.spent)} spent of {formatPeso(p.available)}
-        {p.carry > 0 ? ` · includes ${formatPeso(p.carry)} carried over` : ''}
-      </AppText>
+          {p.carry > 0 ? (
+            <AppText variant="caption" tone="muted">
+              Includes {formatPeso(p.carry)} carried over
+            </AppText>
+          ) : null}
+        </Animated.View>
+      )}
     </Pressable>
   );
 }

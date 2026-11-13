@@ -67,7 +67,7 @@ export default function Schedule() {
     <Screen
       insetTop={false}
       title="Your OJT schedule"
-      subtitle="Used for cost per day, cost per hour and your projected end date."
+      subtitle="For your cost per day and end date."
       footer={<Button label="Finish" disabled={!valid} loading={saving} onPress={finish} />}
     >
       <StepIndicator step={4} total={4} />

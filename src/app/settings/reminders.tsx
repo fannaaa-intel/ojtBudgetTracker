@@ -25,7 +25,7 @@ export default function Reminders() {
   };
 
   return (
-    <Screen insetTop={false} title="Reminders" subtitle="Set on this phone — they work offline and never use the internet.">
+    <Screen insetTop={false} title="Reminders" subtitle="On this phone. They work offline.">
       {allowed === false ? (
         <View style={{ gap: spacing.sm }}>
           <AppText tone="secondary">Notifications are off for this app.</AppText>

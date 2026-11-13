@@ -23,7 +23,7 @@ export default function EditSchedule() {
   }
 
   return (
-    <Screen insetTop={false} title="OJT schedule" subtitle="Used for cost per day, cost per hour and your projected end date." footer={<Button label="Save" onPress={save} />}>
+    <Screen insetTop={false} title="OJT schedule" subtitle="For your cost per day and end date." footer={<Button label="Save" onPress={save} />}>
       <DateField label="Start date" value={startDate} onChange={setStartDate} />
       {errors.startDate ? <AppText variant="caption">{errors.startDate}</AppText> : null}
       <TextField label="Hours per day" value={hoursText} onChangeText={setHoursText} keyboardType="decimal-pad" error={errors.hours} />

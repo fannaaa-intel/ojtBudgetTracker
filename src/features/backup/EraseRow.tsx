@@ -28,5 +28,5 @@ export function EraseRow() {
       },
     ]);
   }
-  return <ListRow title="Erase all data" subtitle="Start over, e.g. to test another agency. A copy is saved first." onPress={run} last />;
+  return <ListRow icon="trash-outline" title="Erase all data" subtitle="Start over. A copy is saved first." onPress={run} last />;
 }

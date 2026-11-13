@@ -1,4 +1,4 @@
-import { AppText, OptionRow, Screen } from '@/components';
+import { AppText, OptionRow, Screen, transitionTheme } from '@/components';
 import type { ThemePref } from '@/db/schema';
 import { useProfile } from '@/features/profile/queries';
 import { updateThemePref } from '@/features/settings/queries';
@@ -18,7 +18,16 @@ export default function Appearance() {
   return (
     <Screen insetTop={false} title="Appearance">
       {OPTIONS.map((o) => (
-        <OptionRow key={o.value} title={o.title} subtitle={o.subtitle} selected={pref === o.value} onPress={() => updateThemePref(profile.user.id, o.value)} />
+        <OptionRow
+          key={o.value}
+          title={o.title}
+          subtitle={o.subtitle}
+          selected={pref === o.value}
+          onPress={() => {
+            if (o.value === pref) return;
+            transitionTheme(() => updateThemePref(profile.user.id, o.value));
+          }}
+        />
       ))}
       <AppText variant="caption" tone="muted">The app stays black, white and grey in every mode.</AppText>
     </Screen>

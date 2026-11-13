@@ -25,8 +25,9 @@ export function BackupRow({ last }: { last?: boolean }) {
 
   return (
     <ListRow
+      icon="cloud-upload-outline"
       title="Back up data"
-      subtitle="Save everything as one JSON file — keep it in Files, Drive or send it to yourself"
+      subtitle="One file you can keep anywhere"
       right={busy ? <ActivityIndicator color={colors.text} /> : undefined}
       onPress={run}
       last={last}

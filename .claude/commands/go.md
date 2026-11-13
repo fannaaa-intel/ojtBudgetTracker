@@ -4,7 +4,7 @@ description: The owner's GO signal — continue to the next pending step of the 
 
 The owner said **GO**. This is their approval to do the next pending step. Extra instructions from the owner (may be empty): $ARGUMENTS
 
-1. Read, in full: `CLAUDE.md`, `plan.md`, and `docs/HANDOFF.md` (especially §1 "How the owner works" and §4 "What GO means").
+1. Read, in full: `CLAUDE.md`, `plan.md`, and `docs/HANDOFF.md` (especially §1 "How the owner works", §3 "Next", §4 "What GO means" and §6 "Design direction" — any UI work must follow §6: no crowded text, minimalist with space, monochrome elements and subtle motion).
 2. Work out where we are:
    - Look at the conversation so far. If a **STEP 1 report** was the last thing you gave and the owner hasn't asked for changes → this GO means **STEP 2: build that phase** (items in order; after each item run `npm run typecheck` and `npm test`, plus the Android bundle check from HANDOFF §5; fix errors; tick the item in plan.md), then give the **STEP 3 phase report** and STOP.
    - If there is no STEP 1 report in this conversation yet (new session) → this GO means: write the **STEP 1 report for the next phase** named in HANDOFF §3 (list items, how, files, packages, schema/migrations, tests, risks, questions). **No code.** STOP and wait for the next GO.

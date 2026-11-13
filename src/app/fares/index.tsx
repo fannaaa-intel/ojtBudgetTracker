@@ -7,11 +7,9 @@ import { describeFormula } from '@/lib/fareForm';
 import { formatPeso } from '@/lib/money';
 import { REGION_LABEL } from '@/lib/region';
 
+/** One line: the formula (or "you enter the fare"). Discounts show as chips, details on the edit screen. */
 function ruleSummary(r: FareRule): string {
-  const parts = [r.isFixed ? 'You enter the fare per ride' : describeFormula(r, (c) => formatPeso(c))];
-  if (!r.isFixed && r.studentPct > 0) parts.push(`student ${r.studentPct}% off`);
-  if (r.promoPct > 0) parts.push(`promo ${r.promoPct}% for all`);
-  return parts.join(' · ');
+  return r.isFixed ? 'You enter the fare per ride' : describeFormula(r, (c) => formatPeso(c));
 }
 
 /** Fare rules for the user's region (Bicol never shows trains or the Carousel). Tap to edit. */
@@ -34,7 +32,15 @@ export default function FareTable() {
             key={r.id}
             title={r.label}
             subtitle={ruleSummary(r)}
-            right={r.userEdited ? <Chip label="Edited" status="plain" /> : undefined}
+            right={
+              r.userEdited || r.promoPct > 0 || (!r.isFixed && r.studentPct > 0) ? (
+                <>
+                  {!r.isFixed && r.studentPct > 0 ? <Chip label={`Student ${r.studentPct}%`} status="plain" /> : null}
+                  {r.promoPct > 0 ? <Chip label={`Promo ${r.promoPct}%`} status="outline" /> : null}
+                  {r.userEdited ? <Chip label="Edited" status="plain" /> : null}
+                </>
+              ) : undefined
+            }
             onPress={() => router.push({ pathname: '/fares/[id]', params: { id: String(r.id) } })}
             last={i === rules.length - 1}
           />

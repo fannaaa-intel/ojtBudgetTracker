@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { AppText, Button, Screen, Section } from '@/components';
+import { Appear, AppText, Button, EmptyState, Screen, Section } from '@/components';
 import { TransactionRow } from '@/features/transactions/components/TransactionRow';
 import { useTransactions } from '@/features/transactions/hooks';
 import type { TxListItem } from '@/features/transactions/queries';
@@ -25,16 +25,25 @@ export default function History() {
     <Screen
       insetTop={false}
       title="History"
-      subtitle="Tap an entry to edit or delete it."
+      subtitle={days.length ? 'Tap an entry to edit it.' : undefined}
       footer={<Button label="Add expense" onPress={() => router.push({ pathname: '/transactions/new', params: { kind: 'expense' } })} />}
     >
-      {days.length === 0 ? <AppText tone="secondary">Nothing logged yet.</AppText> : null}
-      {days.map((d) => (
-        <Section key={d.date} title={formatDateLabel(d.date)} action={<AppText variant="caption" tone="secondary">Spent {formatPeso(d.spent)}</AppText>}>
-          {d.rows.map((t, i) => (
-            <TransactionRow key={t.id} t={t} last={i === d.rows.length - 1} />
-          ))}
-        </Section>
+      {days.length === 0 ? <EmptyState icon="receipt-outline" message="Nothing logged yet." /> : null}
+      {days.map((d, i) => (
+        <Appear key={d.date} index={i}>
+          <Section
+            title={formatDateLabel(d.date)}
+            action={
+              <AppText variant="caption" tone="secondary" style={{ fontVariant: ['tabular-nums'] }}>
+                {formatPeso(d.spent)} spent
+              </AppText>
+            }
+          >
+            {d.rows.map((t, j) => (
+              <TransactionRow key={t.id} t={t} last={j === d.rows.length - 1} />
+            ))}
+          </Section>
+        </Appear>
       ))}
     </Screen>
   );

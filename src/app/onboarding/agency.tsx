@@ -16,7 +16,7 @@ export default function ChooseAgency() {
     <Screen
       insetTop={false}
       title="Choose your agency"
-      subtitle="Where you do your OJT. This sets your region, fares and group features."
+      subtitle="This sets your region and fares."
       footer={<Button label="Continue" disabled={d.agencyId == null} onPress={() => router.push('/onboarding/home')} />}
     >
       <StepIndicator step={2} total={4} />

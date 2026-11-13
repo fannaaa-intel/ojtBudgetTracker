@@ -54,7 +54,7 @@ export default function UpdateFares() {
   }
 
   return (
-    <Screen insetTop={false} title="Update fares" subtitle="After a fare hike: edit a whole mode at once. Past entries never change." footer={<Button label="Save fares" onPress={save} />}>
+    <Screen insetTop={false} title="Update fares" subtitle="Edit a whole mode at once after a fare hike." footer={<Button label="Save fares" onPress={save} />}>
       <ChipRow>
         {groups.map((g) => (
           <Chip key={g.key} label={g.label} selected={group === g.key} onPress={() => setGroup(g.key)} />

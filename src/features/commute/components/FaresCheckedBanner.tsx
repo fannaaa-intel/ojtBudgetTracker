@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { AppText, Button, Chip } from '@/components';
+import { AppText, Button, Chip, IconBadge } from '@/components';
 import type { Region } from '@/db/schema';
 import { formatMonthDayYear } from '@/lib/dates';
 import { FARE_CHECK_DAYS } from '@/lib/fareCheck';
@@ -18,8 +18,9 @@ export function FaresCheckedBanner({ region, showActions = true }: { region: Reg
   const { last, due } = useFareCheck(region);
   if (!last && !due) return null;
   return (
-    <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+    <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.md }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+        <IconBadge name="pricetags-outline" size={36} />
         <AppText variant="heading" style={{ flex: 1 }}>
           {last ? `Fares last checked: ${formatMonthDayYear(last)}` : 'Fares not checked yet'}
         </AppText>
@@ -27,8 +28,8 @@ export function FaresCheckedBanner({ region, showActions = true }: { region: Reg
       </View>
       <AppText variant="caption" tone="secondary">
         {due
-          ? `It has been ${FARE_CHECK_DAYS}+ days. Compare with the posted fare matrix and update any that changed. Past entries keep what you paid.`
-          : 'Check the posted fare matrix if it looks off, and edit any row. Past entries keep what you paid.'}
+          ? `It's been ${FARE_CHECK_DAYS}+ days. Compare with the posted fare matrix.`
+          : 'Edit any row that looks off.'}
       </AppText>
       {showActions && due ? (
         <View style={{ flexDirection: 'row', gap: spacing.sm }}>

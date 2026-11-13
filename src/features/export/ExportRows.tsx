@@ -26,14 +26,16 @@ export function ExportRows() {
   return (
     <>
       <ListRow
+        icon="document-text-outline"
         title="Total OJT cost (PDF)"
-        subtitle="One printable page for your coordinator or parents"
+        subtitle="One page to print or share"
         right={busy === 'pdf' ? <ActivityIndicator color={colors.text} /> : undefined}
         onPress={() => run('pdf')}
       />
       <ListRow
+        icon="grid-outline"
         title="All transactions (CSV)"
-        subtitle="Open in Excel or Google Sheets"
+        subtitle="For Excel or Google Sheets"
         right={busy === 'csv' ? <ActivityIndicator color={colors.text} /> : undefined}
         onPress={() => run('csv')}
         last

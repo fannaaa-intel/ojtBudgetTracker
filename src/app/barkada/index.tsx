@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { AppText, Button, ListRow, Screen, Section, TextField } from '@/components';
+import { Appear, Button, EmptyState, ListRow, Screen, Section, TextField } from '@/components';
 import { BarkadaGate } from '@/features/barkada/components/BarkadaGate';
 import { createBarkada, useBarkadas } from '@/features/barkada/queries';
 import { requireUserId } from '@/features/profile/queries';
@@ -24,21 +24,23 @@ function Inner() {
   const [name, setName] = useState('');
 
   return (
-    <Screen insetTop={false} title={w('barkada')} subtitle={`${w('ambagan')} for group ${w('gala', true)}, Christmas party and exchange gift.`}>
+    <Screen insetTop={false} title={w('barkada')} subtitle={`${w('ambagan')} for group ${w('gala', true)} and parties.`}>
       {list.length > 0 ? (
-        <Section>
+        <Section title="Your groups" icon="people-outline">
           {list.map((b, i) => (
-            <ListRow
-              key={b.id}
-              title={b.name}
-              subtitle={`${b.members} ${b.members === 1 ? 'member' : 'members'} + you`}
-              onPress={() => router.push({ pathname: '/barkada/[id]', params: { id: String(b.id) } })}
-              last={i === list.length - 1}
-            />
+            <Appear key={b.id} index={i} rise={6}>
+              <ListRow
+                icon="people-circle-outline"
+                title={b.name}
+                subtitle={`${b.members} ${b.members === 1 ? 'member' : 'members'} + you`}
+                onPress={() => router.push({ pathname: '/barkada/[id]', params: { id: String(b.id) } })}
+                last={i === list.length - 1}
+              />
+            </Appear>
           ))}
         </Section>
       ) : (
-        <AppText tone="secondary">No barkada yet. Make one for your OJT batchmates.</AppText>
+        <EmptyState icon="people-outline" message="Make one for your OJT batchmates." />
       )}
       <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-end' }}>
         <View style={{ flex: 1 }}>

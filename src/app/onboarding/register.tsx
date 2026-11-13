@@ -14,7 +14,7 @@ export default function Register() {
     <Screen
       insetTop={false}
       title="Register"
-      subtitle="Your profile stays on this phone. No account or internet needed."
+      subtitle="Stays on this phone. No account needed."
       footer={<Button label="Continue" disabled={!canContinue} onPress={() => router.push('/onboarding/agency')} />}
     >
       <StepIndicator step={1} total={4} />

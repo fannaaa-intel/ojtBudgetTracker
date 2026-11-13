@@ -27,7 +27,7 @@ export default function HomeLocation() {
     <Screen
       insetTop={false}
       title="Where do you live?"
-      subtitle="Used to estimate your commute. You can enter the exact km per ride later."
+      subtitle="To estimate your commute. Exact km can come later."
       footer={<Button label="Continue" disabled={d.homeAddress.trim().length < 3} onPress={() => router.push('/onboarding/schedule')} />}
     >
       <StepIndicator step={3} total={4} />

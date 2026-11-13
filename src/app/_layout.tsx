@@ -1,7 +1,7 @@
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppText, Snackbar, ThemeFade, ThemeSync } from '@/components';
@@ -18,6 +18,7 @@ export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
   const [ready, setReady] = useState(false);
   const [seedError, setSeedError] = useState<string | null>(null);
+  const screenRef = useRef<ComponentRef<typeof View>>(null);
 
   useEffect(() => {
     if (!success) return;
@@ -45,9 +46,12 @@ export default function RootLayout() {
       <ThemeSync />
       <NotificationSync />
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
-      <ThemeFade />
-      <Snackbar />
+      {/* Everything the theme cross-fade snapshots; ThemeFade sits on top of it. */}
+      <View ref={screenRef} collapsable={false} style={{ flex: 1, backgroundColor: colors.background }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+        <Snackbar />
+      </View>
+      <ThemeFade target={screenRef} />
       <LockGate />
     </SafeAreaProvider>
   );

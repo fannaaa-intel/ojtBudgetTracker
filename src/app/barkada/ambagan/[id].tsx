@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
-import { AppText, Button, Chip, ChipRow, DateField, ListRow, Screen, Section, TextField, ToggleRow } from '@/components';
+import { AnimatedAmount, AppText, Button, Chip, ChipRow, DateField, ListRow, ProgressBar, Screen, Section, TextField, ToggleRow } from '@/components';
 import { BarkadaGate } from '@/features/barkada/components/BarkadaGate';
 import { createAmbagan, deleteAmbagan, setSharePaid, useAmbagan, useBarkada } from '@/features/barkada/queries';
 import { requireUserId } from '@/features/profile/queries';
@@ -145,18 +145,36 @@ function AmbaganDetail({ id }: { id: number }) {
   const paidCount = shares.filter((s) => s.paidAt).length;
 
   return (
-    <Screen insetTop={false} title={a.title} subtitle={`${AMBAGAN_KINDS.find((k) => k.kind === a.kind)?.label} · ${formatDateLabel(a.date)} · ${data.barkada.name}`}>
-      <View style={{ gap: spacing.xs }}>
-        <AppText variant="amountLarge">{formatPeso(a.total)}</AppText>
-        <AppText tone="secondary">
-          Paid by {a.paidBy === 'me' ? 'you' : a.paidBy} · your share {formatPeso(mine)} · {paidCount} of {shares.length} paid
+    <Screen insetTop={false} title={a.title} subtitle={`${data.barkada.name}, ${formatDateLabel(a.date)}`}>
+      <View style={{ gap: spacing.sm }}>
+        <AppText variant="label" tone="muted">
+          {AMBAGAN_KINDS.find((k) => k.kind === a.kind)?.label}
         </AppText>
+        <AnimatedAmount value={a.total} variant="amountLarge" />
+        <AppText tone="secondary">Paid by {a.paidBy === 'me' ? 'you' : a.paidBy}</AppText>
+        <View style={{ flexDirection: 'row', gap: spacing.lg }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="caption" tone="secondary">
+              Your share
+            </AppText>
+            <AppText variant="amount">{formatPeso(mine)}</AppText>
+          </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <AppText variant="caption" tone="secondary">
+              Paid
+            </AppText>
+            <AppText variant="amount">
+              {paidCount} of {shares.length}
+            </AppText>
+          </View>
+        </View>
+        <ProgressBar pct={shares.length ? (paidCount / shares.length) * 100 : 0} />
       </View>
-      <Section title="Members">
+      <Section title="Members" icon="people-outline">
         {shares.map((s) => (
           <View key={s.memberName} style={{ paddingVertical: spacing.xs }}>
             <ToggleRow
-              label={`${s.memberName} · ${formatPeso(s.share)}`}
+              label={`${s.memberName}, ${formatPeso(s.share)}`}
               description={s.memberName === a.paidBy ? 'Paid the total' : s.paidAt ? `Paid ${formatDateLabel(s.paidAt)}` : a.paidBy === 'me' ? 'Owes you' : `Owes ${a.paidBy}`}
               value={!!s.paidAt}
               disabled={s.memberName === a.paidBy}

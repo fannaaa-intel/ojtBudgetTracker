@@ -103,6 +103,8 @@ export type TxListItem = {
   routeId: number | null;
   categoryName: string | null;
   categoryKey: string | null;
+  /** Ionicons base name from the seeded category (e.g. "bus"); rows add "-outline". */
+  categoryIcon: string | null;
   parentName: string | null;
   parentKey: string | null;
   sourceName: string | null;
@@ -120,6 +122,7 @@ export function listTransactions(opts: { limit?: number; date?: string } = {}): 
       routeId: transactions.routeId,
       categoryName: categories.name,
       categoryKey: categories.key,
+      categoryIcon: categories.icon,
       parentName: parentCat.name,
       parentKey: parentCat.key,
       sourceName: incomeSources.name,

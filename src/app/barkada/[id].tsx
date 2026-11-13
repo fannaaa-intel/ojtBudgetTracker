@@ -46,13 +46,14 @@ function Inner() {
         />
       }
     >
-      <Section title="Ambagan">
+      <Section title="Ambagan" icon="cash-outline">
         {ambagan.length === 0 ? <ListRow title="No ambagan yet" subtitle={members.length ? 'Tap “New ambagan” below' : 'Add members first'} last /> : null}
         {ambagan.map((a, i) => (
           <ListRow
             key={a.id}
+            icon="cash-outline"
             title={a.title}
-            subtitle={`${AMBAGAN_KINDS.find((k) => k.kind === a.kind)?.label ?? ''} · ${formatDateLabel(a.date)} · paid by ${a.paidBy === 'me' ? 'you' : a.paidBy}`}
+            subtitle={`${formatDateLabel(a.date)}, paid by ${a.paidBy === 'me' ? 'you' : a.paidBy}`}
             value={formatPeso(a.total)}
             onPress={() => router.push({ pathname: '/barkada/ambagan/[id]', params: { id: String(a.id) } })}
             last={i === ambagan.length - 1}

@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { AppText } from './AppText';
+import { usePressScale } from './usePressScale';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
   label: string;
@@ -23,6 +26,7 @@ type Props = {
 
 export function Chip({ label, detail, selected, status, onPress, onLongPress, accessibilityLabel, onInverse }: Props) {
   const { colors, radius, spacing, typography } = useTheme();
+  const press = usePressScale(0.94);
 
   if (status) {
     const filled = status === 'inverse';
@@ -53,23 +57,27 @@ export function Chip({ label, detail, selected, status, onPress, onLongPress, ac
   }
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole={selected === undefined ? 'button' : 'checkbox'}
       accessibilityState={selected === undefined ? undefined : { checked: selected }}
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       onLongPress={onLongPress}
-      style={({ pressed }) => ({
-        minHeight: 48,
-        justifyContent: 'center',
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.xs,
-        borderRadius: radius.pill,
-        borderWidth: selected ? 2 : 1,
-        borderColor: selected ? colors.borderStrong : colors.border,
-        backgroundColor: selected ? colors.surfaceAlt : colors.surface,
-        opacity: pressed ? 0.7 : 1,
-      })}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[
+        {
+          minHeight: 48,
+          justifyContent: 'center',
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.sm,
+          borderRadius: radius.pill,
+          borderWidth: selected ? 2 : 1,
+          borderColor: selected ? colors.borderStrong : colors.border,
+          backgroundColor: selected ? colors.surfaceAlt : colors.surface,
+        },
+        press.style,
+      ]}
     >
       <AppText style={{ fontWeight: selected ? '600' : '400' }}>{label}</AppText>
       {detail ? (
@@ -77,7 +85,7 @@ export function Chip({ label, detail, selected, status, onPress, onLongPress, ac
           {detail}
         </AppText>
       ) : null}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
