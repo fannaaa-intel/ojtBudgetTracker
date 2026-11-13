@@ -13,7 +13,7 @@ import { fareCheckDue, lastChecked } from '@/lib/fareCheck';
 import type { FareValues } from '@/lib/fareForm';
 import { getSetting, setSetting } from '../settings/appSettings';
 import { isModeAllowed } from '@/lib/region';
-import { legFare, routeTotals, type LegValues } from '@/lib/route';
+import { legFare, routeTotals, tripTimes, type LegValues, type TripType } from '@/lib/route';
 import { splitByBeep } from '@/lib/wallet';
 import { getProfile } from '../profile/queries';
 import { addTransaction, getCategoryIdByKey, getDefaultWalletId, notDeleted } from '../transactions/queries';
@@ -141,7 +141,7 @@ export function totalsFor(route: Pick<RouteWithLegs, 'legs'>, isStudent: boolean
 }
 
 export type LegDraft = LegValues & { fareRuleId: number; fromLabel: string | null; toLabel: string | null };
-export type RouteDraft = { id?: number; name: string; minutes: number | null; makeDefault: boolean; legs: LegDraft[] };
+export type RouteDraft = { id?: number; name: string; minutes: number | null; trip: TripType; makeDefault: boolean; legs: LegDraft[] };
 
 /** Insert or update a route and replace its legs, all in one transaction. Returns the route id. */
 export function saveRoute(userId: number, draft: RouteDraft): number {
@@ -150,9 +150,9 @@ export function saveRoute(userId: number, draft: RouteDraft): number {
     const makeDefault = draft.makeDefault || existing === 0 || (existing === 1 && draft.id != null);
     let id = draft.id;
     if (id == null) {
-      id = tx.insert(routes).values({ userId, name: draft.name, minutes: draft.minutes, isDefault: false }).returning({ id: routes.id }).get().id;
+      id = tx.insert(routes).values({ userId, name: draft.name, minutes: draft.minutes, trip: draft.trip, isDefault: false }).returning({ id: routes.id }).get().id;
     } else {
-      tx.update(routes).set({ name: draft.name, minutes: draft.minutes, updatedAt: sql`(datetime('now'))` }).where(eq(routes.id, id)).run();
+      tx.update(routes).set({ name: draft.name, minutes: draft.minutes, trip: draft.trip, updatedAt: sql`(datetime('now'))` }).where(eq(routes.id, id)).run();
       tx.delete(routeLegs).where(eq(routeLegs.routeId, id)).run();
     }
     draft.legs.forEach((l, seq) => {
@@ -226,7 +226,7 @@ export function timesLoggedToday(routeId: number): number {
  * Log a commute for today as Pamasahe. With a Beep card, train/Carousel legs are paid from the card
  * (one expense on the Beep wallet) and the rest from Cash. Returns the transaction ids and the total.
  */
-export function logCommute(routeId: number, trip: 'round' | 'one_way', beepWalletId?: number | null): { ids: number[]; amount: number } {
+export function logCommute(routeId: number, trip: TripType, beepWalletId?: number | null): { ids: number[]; amount: number } {
   const p = getProfile();
   if (!p) throw new Error('No registered user on this phone');
   const route = getRoute(routeId, p.user.region);
@@ -234,7 +234,7 @@ export function logCommute(routeId: number, trip: 'round' | 'one_way', beepWalle
   if (route.needsUpdate) throw new Error('This route uses fares from another region. Edit it first.');
   const categoryId = getCategoryIdByKey('commute');
   if (categoryId == null) throw new Error('Pamasahe category is missing');
-  const times = trip === 'round' ? 2 : 1;
+  const times = tripTimes(trip);
   const parts = splitByBeep(route.legs.map((l) => ({ mode: l.rule.mode, payable: legFare(l.rule, l, p.user.isStudent).payable })));
   const useBeep = beepWalletId != null && parts.beep > 0;
   const label = `${route.name} · ${trip === 'round' ? 'round trip' : 'one way'}`;

@@ -12,6 +12,7 @@ import m0007 from './0007_jittery_vargas.sql';
 import m0008 from './0008_serious_ken_ellis.sql';
 import m0009 from './0009_parched_lifeguard.sql';
 import m0010 from './0010_unique_shatterstar.sql';
+import m0011 from './0011_fantastic_the_hood.sql';
 
   export default {
     journal,
@@ -26,7 +27,8 @@ m0006,
 m0007,
 m0008,
 m0009,
-m0010
+m0010,
+m0011
     }
   }
   

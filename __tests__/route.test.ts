@@ -1,6 +1,22 @@
 import type { FareRuleInput } from '../src/lib/fare';
 import { barkadaVisible, featuresFor, isModeAllowed } from '../src/lib/region';
-import { legKm, parseKm, parseLegText, routeTotals, validateLeg, type LegValues } from '../src/lib/route';
+import { legKm, parseKm, parseLegText, routeTotals, TRIP_LABEL, tripFare, tripTimes, validateLeg, type LegValues } from '../src/lib/route';
+
+describe('usual trip (round trip / one way)', () => {
+  it('round trip = 2 rides, one way = 1', () => {
+    expect(tripTimes('round')).toBe(2);
+    expect(tripTimes('one_way')).toBe(1);
+  });
+  it('fare shown follows the route’s usual trip, in whole centavos', () => {
+    const totals = { oneWay: 4_225 }; // ₱42.25
+    expect(tripFare(totals, 'round')).toBe(8_450);
+    expect(tripFare(totals, 'one_way')).toBe(4_225);
+  });
+  it('labels', () => {
+    expect(TRIP_LABEL.round).toBe('Round trip');
+    expect(TRIP_LABEL.one_way).toBe('One way');
+  });
+});
 
 const jeep: FareRuleInput = { baseFare: 1400, baseKm: 4, perKm: 200, studentPct: 20, promoPct: 0, roundTo: 25, isFixed: false };
 const mrt: FareRuleInput = { baseFare: 0, baseKm: 0, perKm: 0, studentPct: 50, promoPct: 50, roundTo: 25, isFixed: true };

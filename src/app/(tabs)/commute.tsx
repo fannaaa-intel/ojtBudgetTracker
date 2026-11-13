@@ -27,7 +27,7 @@ export default function Commute() {
       </Appear>
       <Button label="New route" onPress={() => router.push({ pathname: '/routes/[id]', params: { id: 'new' } })} />
       <AppText variant="caption" tone="muted">
-        Round-trip fares{profile.user.isStudent ? ', student discount included' : ''}.
+        Fares for each route’s usual trip{profile.user.isStudent ? ', student discount included' : ''}.
       </AppText>
       <Appear index={2}>
         <Section title="Fares and cards" icon="card-outline">

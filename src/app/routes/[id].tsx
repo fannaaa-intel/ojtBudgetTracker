@@ -1,13 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
-import { AppText, Button, Screen, TextField, ToggleRow } from '@/components';
+import { AppText, Button, Chip, ChipRow, Screen, TextField, ToggleRow } from '@/components';
 import { LegEditor, type LegForm } from '@/features/commute/components/LegEditor';
 import { deleteRoute, getRoute, saveRoute, useFareRules, useRoutes, type LegDraft } from '@/features/commute/queries';
 import { useProfile } from '@/features/profile/queries';
 import { estimateRoadKm } from '@/lib/distance';
 import { formatPeso } from '@/lib/money';
-import { parseLegText, routeTotals } from '@/lib/route';
+import { parseLegText, routeTotals, TRIP_LABEL, tripFare, type TripType } from '@/lib/route';
 import { amountToInput } from '@/lib/transactions';
 import { showSnack } from '@/store/snackbar';
 import { useTheme } from '@/theme';
@@ -29,6 +29,7 @@ export default function RouteEditor() {
   const [name, setName] = useState(initial?.name ?? (profile ? `Home → ${profile.agency.shortName}` : ''));
   const [minutes, setMinutes] = useState(initial?.minutes != null ? String(initial.minutes) : '');
   const [makeDefault, setMakeDefault] = useState(initial?.isDefault ?? allRoutes.length === 0);
+  const [trip, setTrip] = useState<TripType>(initial?.trip ?? 'round');
   const [legs, setLegs] = useState<LegForm[]>(() =>
     initial
       ? initial.legs.map((l) => ({
@@ -91,7 +92,7 @@ export default function RouteEditor() {
       if (!p.rule || !p.result?.ok) throw new Error('unreachable');
       return { ...p.result.values, fareRuleId: p.rule.id, fromLabel: legs[i].fromLabel, toLabel: legs[i].toLabel };
     });
-    saveRoute(profile!.user.id, { id: editingId, name: name.trim(), minutes: mins, makeDefault, legs: draftLegs });
+    saveRoute(profile!.user.id, { id: editingId, name: name.trim(), minutes: mins, trip, makeDefault, legs: draftLegs });
     router.back();
     showSnack(editingId ? 'Route updated' : 'Route saved');
   }
@@ -119,8 +120,8 @@ export default function RouteEditor() {
       footer={
         <View style={{ gap: spacing.sm }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', columnGap: spacing.md }}>
-            <AppText tone="secondary">One way {formatPeso(totals.oneWay)}</AppText>
-            <AppText variant="amount">Round trip {formatPeso(totals.roundTrip)}</AppText>
+            <AppText tone="secondary">{TRIP_LABEL[trip]}</AppText>
+            <AppText variant="amount">{formatPeso(tripFare(totals, trip))}</AppText>
           </View>
           <Button label="Save route" onPress={save} />
         </View>
@@ -152,6 +153,20 @@ export default function RouteEditor() {
       ))}
       {showErrors && legs.length === 0 ? <AppText variant="caption">Add at least one ride.</AppText> : null}
       <Button label="Add another ride" variant="secondary" onPress={() => setLegs((ls) => [...ls, newLeg()])} />
+
+      <View style={{ gap: spacing.sm }}>
+        <AppText variant="label" tone="secondary">
+          Usual trip
+        </AppText>
+        <ChipRow>
+          {(['round', 'one_way'] as const).map((t) => (
+            <Chip key={t} label={TRIP_LABEL[t]} detail={formatPeso(tripFare(totals, t))} selected={trip === t} onPress={() => setTrip(t)} />
+          ))}
+        </ChipRow>
+        <AppText variant="caption" tone="muted">
+          Shown on the Commute tab and logged by default. You can still pick the other when logging.
+        </AppText>
+      </View>
 
       <TextField
         label="Travel time, one way (minutes)"

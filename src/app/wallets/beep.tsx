@@ -52,13 +52,13 @@ export default function BeepCard() {
             {s.low ? <Chip label="Low" status="inverse" onInverse /> : <IconBadge name="card-outline" size={36} onInverse />}
           </View>
           <AnimatedAmount value={s.balance} variant="amountLarge" tone="inverse" />
-          {s.roundTrip > 0 ? (
+          {s.perTrip > 0 ? (
             <>
               <AppText variant="caption" tone="inverse" style={{ opacity: 0.85 }}>
-                About {Math.floor(s.balance / s.roundTrip)} round trips left
+                About {Math.floor(s.balance / s.perTrip)} {s.trip === 'round' ? 'round trips' : 'one-way trips'} left
               </AppText>
               <AppText variant="caption" tone="inverse" style={{ opacity: 0.65 }}>
-                {formatPeso(s.roundTrip)} each on your daily route
+                {formatPeso(s.perTrip)} each on your daily route
               </AppText>
             </>
           ) : (

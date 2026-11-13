@@ -1,0 +1,1 @@
+ALTER TABLE `routes` ADD `trip` text DEFAULT 'round' NOT NULL;

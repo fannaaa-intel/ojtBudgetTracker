@@ -4,6 +4,7 @@ import { Alert, View } from 'react-native';
 import { AppText, Button, Chip, ChipRow } from '@/components';
 import { useDbQuery } from '@/db/useDbQuery';
 import { formatPeso } from '@/lib/money';
+import { TRIP_LABEL, tripFare, tripTimes, type TripType } from '@/lib/route';
 import { labelNow } from '@/store/labels';
 import { showSnack } from '@/store/snackbar';
 import { useTheme } from '@/theme';
@@ -16,7 +17,8 @@ import { COMMUTE_TABLES, getDefaultRoute, logCommute, timesLoggedToday, totalsFo
 export function CommuteQuickLog() {
   const { spacing } = useTheme();
   const profile = useProfile();
-  const [trip, setTrip] = useState<'round' | 'one_way'>('round');
+  // null = use the route's usual trip; a tap on a chip overrides it for this log only.
+  const [tripPick, setTrip] = useState<TripType | null>(null);
   const [payBeep, setPayBeep] = useState(true);
   const beep = useBeepState();
   const state = useDbQuery(
@@ -47,10 +49,11 @@ export function CommuteQuickLog() {
     );
   }
 
+  const trip: TripType = tripPick ?? route.trip;
   const totals = totalsFor(route, profile.user.isStudent);
-  const amount = trip === 'round' ? totals.roundTrip : totals.oneWay;
-  const canBeep = !!beep?.beep && beep.roundTrip > 0;
-  const beepPart = trip === 'round' ? beep?.roundTrip ?? 0 : (beep?.roundTrip ?? 0) / 2;
+  const amount = tripFare(totals, trip);
+  const canBeep = !!beep?.beep && beep.oneWay > 0;
+  const beepPart = (beep?.oneWay ?? 0) * tripTimes(trip);
 
   function doLog() {
     const r = logCommute(route!.id, trip, canBeep && payBeep ? beep!.beep!.id : null);
@@ -70,8 +73,9 @@ export function CommuteQuickLog() {
     <View style={{ gap: spacing.md }}>
       <AppText variant="heading">{route.name}</AppText>
       <ChipRow>
-        <Chip label="Round trip" detail={formatPeso(totals.roundTrip)} selected={trip === 'round'} onPress={() => setTrip('round')} />
-        <Chip label="One way" detail={formatPeso(totals.oneWay)} selected={trip === 'one_way'} onPress={() => setTrip('one_way')} />
+        {(['round', 'one_way'] as const).map((t) => (
+          <Chip key={t} label={TRIP_LABEL[t]} detail={formatPeso(tripFare(totals, t))} selected={trip === t} onPress={() => setTrip(t)} />
+        ))}
       </ChipRow>
       {canBeep ? (
         <ChipRow>

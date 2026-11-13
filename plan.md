@@ -150,6 +150,11 @@ Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the
 
 - [x] App updates (added Nov 13 at owner's request, **before the first APK**): `expo-updates` / EAS Update, channel `preview`, runtime = app version. Auto check only 8 PM–12 AM Manila when the app is open (max every 30 min) → downloads → "Update ready · Restart" snackbar; Settings → Check for updates any time. CLAUDE.md rule 4 now allows this one exception.
 
+### Revisions after the first APK
+Normally shipped as app updates (EAS Update). The two below went into a **fresh APK (versionCode 4)** at the owner's request instead.
+- [x] Nov 13: **Usual trip per route** — Round trip (default) or One way, chosen in the route editor (`routes.trip`, migration 0011). Commute tab shows that fare + a chip; the Add tab's one-tap log starts on it (the other can still be picked); Beep "trips left" follows it. Compare routes stays round trip.
+- [x] Nov 13: **Keyboard never covers inputs (whole app)** — `Screen` wraps content in a KeyboardAvoidingView (padding, offset measured from the window; Android is edge-to-edge so the window no longer resizes) and scrolls the focused field into view on keyboard show, on layout shrink and on focus (`TextField` → `useRevealFocusedInput`). AmountPrompt uses padding on Android too.
+
 Owner answers (Nov 13): scope 1–6 in order · holidays as above · Expo account later · custom agency stays not allowed (recommended).
 Not now: multiple Beep cards, DB-level test harness, custom agency, promo end (already a switch).
 

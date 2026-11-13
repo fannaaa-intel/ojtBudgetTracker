@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Appear, Chip, EmptyState, ListRow, Section } from '@/components';
 import { formatPeso } from '@/lib/money';
+import { TRIP_LABEL, tripFare } from '@/lib/route';
 import { totalsFor, type RouteWithLegs } from '../queries';
 
 /** "Jeep → MRT-3" — the rides only. Minutes live on the route screen and in Compare. */
@@ -25,9 +26,14 @@ export function RouteList({ routes, isStudent }: { routes: RouteWithLegs[]; isSt
             icon={r.isDefault ? 'star-outline' : 'git-commit-outline'}
             title={r.name}
             subtitle={r.needsUpdate ? 'Needs update: fares from another region' : routeSummary(r)}
-            right={r.isDefault ? <Chip label="Daily" status="plain" /> : undefined}
-            status={r.isDefault ? 'Daily route' : undefined}
-            value={r.needsUpdate ? undefined : formatPeso(totalsFor(r, isStudent).roundTrip)}
+            right={
+              <>
+                {r.isDefault ? <Chip label="Daily" status="plain" /> : null}
+                <Chip label={TRIP_LABEL[r.trip]} status="plain" />
+              </>
+            }
+            status={[r.isDefault ? 'Daily route' : null, TRIP_LABEL[r.trip]].filter(Boolean).join(', ')}
+            value={r.needsUpdate ? undefined : formatPeso(tripFare(totalsFor(r, isStudent), r.trip))}
             onPress={() => router.push({ pathname: '/routes/[id]', params: { id: String(r.id) } })}
             last={i === routes.length - 1}
           />

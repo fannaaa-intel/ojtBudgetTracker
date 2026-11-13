@@ -41,6 +41,21 @@ export function routeTotals(legs: { rule: FareRuleInput; leg: LegValues }[], isS
   return { oneWay: t.payable, oneWayRegular: t.regular, roundTrip: t.payable * 2 };
 }
 
+/** How the intern usually rides a route: there and back the same day, or one way only. */
+export type TripType = 'round' | 'one_way';
+
+export const TRIP_LABEL: Record<TripType, string> = { round: 'Round trip', one_way: 'One way' };
+
+/** Rides per log: 2 for a round trip, 1 for one way. */
+export function tripTimes(trip: TripType): number {
+  return trip === 'round' ? 2 : 1;
+}
+
+/** The fare for the route's usual trip (what the Commute tab shows and the Add tab logs by default). */
+export function tripFare(totals: Pick<RouteTotals, 'oneWay'>, trip: TripType): number {
+  return totals.oneWay * tripTimes(trip);
+}
+
 /** Problem with one leg, or null when it can be priced. */
 export function validateLeg(rule: FareRuleInput, leg: LegValues): string | null {
   if (rule.isFixed) {

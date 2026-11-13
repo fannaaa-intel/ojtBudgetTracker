@@ -1,6 +1,6 @@
-# OJT Budget Tracker — handoff
+﻿# OJT Budget Tracker — handoff
 
-Last updated: 2026-11-13 · Branch `main` · Remote `https://github.com/fannaaa-intel/ojtBudgetTracker`
+Last updated: 2026-11-13 (end of session) · Branch `main` · Remote `https://github.com/fannaaa-intel/ojtBudgetTracker`
 
 Read in this order: **CLAUDE.md** (rules) → **plan.md** (decisions + checklist) → this file (status + how we work).
 
@@ -35,11 +35,32 @@ Read in this order: **CLAUDE.md** (rules) → **plan.md** (decisions + checklist
 | UI polish after Phase 3 | ✅ line heights, roomier rows/sections, wrap instead of squeeze, redesigned Welcome screen |
 | Theme switch | ✅ snapshot cross-fade (`react-native-view-shot`, 450 ms ease-in-out) when tapping Settings → Appearance; flicker-free colour fade for phone-driven changes; off with Reduce Motion — **owner to confirm it feels smooth on the phone** |
 | UI pass (space + motion) | ✅ plan.md §6a items 1–7 built 2026-11-13, committed + pushed (`0d21079`) · ⏳ item 8 cross-fade tuning waits for owner feedback |
-| 4 Real phones + loose ends | ✅ plan.md §6b items 1–5 built 2026-11-13 (**not committed yet**) · ⏳ item 6 APK: setup done, project linked — owner runs the EAS build · **STEP 3 report given** |
+| 4 Real phones + loose ends | ✅ plan.md §6b items 1–5 + app updates, committed + pushed (`1fd101b`) · ⏳ item 6: real APK built on EAS — tick when the owner confirms it installs and opens |
+| Tutorial video for co-interns | ⏳ **next task** — owner sends screenshots, then says GO (see §3 item 5 below) |
 
-Numbers: 31 test suites / **203 tests** passing · migrations `0000`–`0010` (all additive after 0000; 0010 = `holidays.region`) · 28 tables.
+Numbers: 32 test suites / **209 tests** passing · migrations `0000`–`0011` (all additive after 0000; 0010 = `holidays.region`, 0011 = `routes.trip`) · 28 tables.
+
+Revisions after the APK are normally shipped as EAS Updates (see §3 item 4) and listed in plan.md
+§6b "Revisions after the first APK". 2026-11-13: usual trip per route + keyboard fix (whole app) —
+the owner chose a **fresh APK (versionCode 4)** for these instead of an update; they reinstall it and
+replace the file in their Google Drive folder (same folder link → the video QR stays valid).
+Keyboard handling lives in `src/components/Screen.tsx` — any new input must use `TextField` (or call
+`useRevealFocusedInput()` on focus) and any new screen must use `Screen`, or the keyboard can cover it.
 
 ## 3. Next (what the next session starts with)
+
+**Start with item 5 (tutorial video).** Items 0–4 are background on what was built; still-open
+owner checks are listed in each.
+
+### Session log 2026-11-13 (what we did)
+- UI pass (space, motion, Welcome showcase) → committed `0d21079`.
+- Phase 4: seed top-up, 2027 holidays (+ Camarines Norte days), agency pins (looked up), savings
+  withdrawals, accessibility pass, Expo account + EAS project, APK setup, `expo-font`, app updates
+  (8 PM–12 AM window), regression review (fixed: info rows read as "disabled") → committed `1fd101b`.
+- Real APK build started on EAS (build `29b32882-…`). Owner installs it, then shares it with the
+  5 co-interns via a **Google Drive link** (more reliable than the Expo page).
+- Group-chat install message (Taglish) was written for the owner — copy kept in item 5 below.
+- Owner chose a **tutorial video made from their screenshots** (I edit them into an MP4).
 
 0. **UI pass — built (2026-11-13), STEP 3 report given.** Waiting for the owner's phone check:
    Welcome showcase, Home, tabs, list screens at 360 dp + 130% font, light + dark, Reduce Motion.
@@ -83,7 +104,9 @@ Numbers: 31 test suites / **203 tests** passing · migrations `0000`–`0010` (a
    Notes: `expo-font` must stay installed (vector icons need it outside Expo Go); run
    `npx expo-doctor` before builds; npm now skips install scripts (esbuild) — harmless so far.
    **The first APK the owner built (started before expo-updates was added) is a test copy only —
-   the APK sent to interns must be built after the app-updates change.**
+   the APK sent to interns must be built after the app-updates change.** That real APK build
+   (commit `1fd101b`, versionCode 3) was started 2026-11-13: build `29b32882-2ee9-4032-a4dc-0b53f6e50e23`.
+   Tick plan.md §6b item 6 once the owner confirms it installs and opens.
 4. **Shipping a revision (EAS Update)** — owner decision 2026-11-13, see CLAUDE.md rule 4:
    - JS-only change (screens, logic, copy, seed data like holidays/fares): **do NOT change
      `version`** (runtime = app version). Run checks, commit, then the owner runs
@@ -96,17 +119,79 @@ Numbers: 31 test suites / **203 tests** passing · migrations `0000`–`0010` (a
      UpdateSync in the root layout, UpdateRow in Settings). `checkAutomatically: NEVER` in app.json —
      we decide when to check. Disabled in Expo Go / dev.
    - Rollback a bad update: `npx eas-cli update:rollback` (or republish the previous commit).
+5. **Tutorial video for the co-interns — NEXT TASK.** Owner decision 2026-11-13: "Screenshots → I
+   edit". The owner takes screenshots on the installed APK, pastes them into the chat, then says
+   **GO**. Then build the video. No STEP 1 report needed — the plan below is already agreed.
+   - **FINAL shot list (13, owner dropped the APK-install shot)** — light mode, Do Not Disturb,
+     **owner uses their own real name/details (owner's choice, 2026-11-13 — don't ask them to use a
+     sample name or blur it).** Owner pastes them in order 1→13:
+     1 Welcome top (after the animations settle) · 2 Welcome scrolled to "See it in action" ·
+     3 Register with their name · 4 Agency (one selected) · 5 Home step filled in · 6 Schedule
+     filled in · 7 Route editor "Bahay → Office" with 1–2 rides + total · 8 Commute tab with the
+     saved route · 9 + tab (meal chips + Log commute) · 10 black snackbar "Carinderia ₱80.00
+     logged · Undo" · 11 Home tab with the Today card · 12 Budget tab "Safe to spend today"
+     (after adding Pagkain weekly ₱1,000) · 13 More → Settings → "Check for updates" row.
+     If some are missing or out of order, build with what was sent and say which were skipped.
+     The install step is NOT a screenshot: show it as a text-only card instead (see captions).
+   - **Video spec:** vertical 1080×1920, 45–60 s, MP4 (H.264, plays in Messenger). Monochrome like
+     the app: white or near-black background, Logo from `assets/brand/logo-mark.png`.
+     Title card (logo + "OJT Budget — Track every peso of your OJT") → one step per screenshot
+     (screenshot in a rounded phone frame, slow zoom/slide, step number + big Taglish caption,
+     ~4–6 s each, short crossfades) → end card ("I-download na" + **QR code** + "Link sa group chat",
+     "Android lang · Offline · Libre"). No music needed (owner can add one in Messenger/CapCut).
+   - **Owner's Google Drive link (folder with the APK), given 2026-11-13:**
+     https://drive.google.com/drive/folders/1mgw3Yzi55WHVlmu9t8_v1Ri_ASpNc90T?usp=drive_link
+     — use THIS for the QR. (It's a folder link: viewers open the folder, tap `OJT-Budget.apk` →
+     Download. Folder must be shared "Anyone with the link".)
+   - **QR on the end card (owner request):** use a QR of the owner's **Google Drive link** to
+     `OJT-Budget.apk` (doesn't expire) — ask for the link if they didn't send it. Generate it
+     black-on-white, large quiet zone, e.g. `npx --yes qrcode -o marketing/video/apk-qr.png -w 720 "<link>"`
+     (Node `qrcode` CLI; check it scans before rendering). Fallback only: the Expo build-page QR
+     the owner sent is saved at `marketing/video/expo-build-qr.png` — it **expires Nov 27, 2026 10:57 AM**
+     (EAS build artifacts last 13 days), so don't use it if the video will be shared after that;
+     if used, add "Valid until Nov 27" under it.
+   - **Real APK:** EAS build `29b32882-2ee9-4032-a4dc-0b53f6e50e23` succeeded 2026-11-13 (APK,
+     20 min build). Owner downloads it, renames to `OJT-Budget.apk`, keeps a copy on Google Drive.
+   - **Captions (Taglish), FINAL order:** text card after the title (no screenshot) "I-download sa
+     link, i-install (Allow → Install anyway)" · 1–2 "Get started — offline, walang account" ·
+     3 "Ilagay ang pangalan mo" · 4 "Piliin ang agency mo" · 5 "Saan ka nakatira?" · 6 "OJT
+     schedule: start, oras kada araw, required hours" · 7 "I-save ang route mo papuntang office" ·
+     8 "Kita agad ang pamasahe (round trip)" · 9 "Isang tap lang: pagkain at pamasahe" ·
+     10 "Na-log na! May Undo pa" · 11 "Bantayan ang gastos mo today" · 12 "Magkano pa ang safe
+     gastusin" · 13 "Updates: buksan 8 PM–12 AM → Restart". Owner may edit captions.
+   - **Tools:** ImageMagick 7 is installed (`magick`). **ffmpeg is NOT installed** — the owner
+     rejected `scoop install ffmpeg` mid-step and asked for the shot list first. **Ask before
+     installing ffmpeg** (`scoop install ffmpeg`). If they say no: make an animated GIF with
+     ImageMagick instead (also plays in Messenger), or MP4 via another tool only with permission.
+   - **Files:** save screenshots to `marketing/video/shots/01.png…14.png` and the build script
+     (PowerShell + magick/ffmpeg) to `marketing/video/`; output to `marketing/video/out/`.
+     Add `marketing/video/shots/` and `marketing/video/out/` to `.gitignore` (no binaries in git;
+     the small QR PNGs in `marketing/video/` may be committed).
+     Show the owner a few key frames (title, one step, end card) before the final render if
+     anything is uncertain.
+   - **Group-chat message** (already given to the owner; reuse or update with the Drive link):
+     download link → install (Allow unknown apps; Play Protect → More details → Install anyway) →
+     Get started → name → agency → home → schedule → Commute → New route → + tab to log →
+     updates: open the app 8 PM–12 AM → Restart (or More → Settings → Check for updates) →
+     "Offline, walang account, sa phone niyo lang ang data." Android only (no iPhone).
 
 ## 4. What "GO" means next session
 
 - If the last thing given was a **STEP 1 report** → GO = build that phase (STEP 2), then STEP 3 report.
 - If the last thing given was a **STEP 3 phase report** → GO = write the **next phase's
   STEP 1 report** (no code), then wait.
-- **Current state (2026-11-13): the Phase 4 STEP 3 report was the last thing given** (items 1–5
-  done, not committed; item 6 APK set up, owner runs the build). Next: apply fixes from the owner's
-  phone check / APK install; "commit and push" when asked; tick item 6 once the APK installs. No Phase 5 is defined — a plain GO after
-  the APK = propose Phase 5 as a STEP 1 report (ideas: Eid holiday dates when proclaimed, Talisay
-  hall pin, multiple Beep cards, DB-level test harness).
+- **Current state (2026-11-13): Phase 4 committed + pushed (`1fd101b`), real APK built.**
+  **Next GO = make the tutorial video** (§3 item 5): the owner pastes the 13 screenshots (FINAL
+  shot list in §3 item 5) and says GO. Use the saved Google Drive folder link for the end-card QR.
+  Ask about ffmpeg first if it's still not installed (fallback: animated GIF with ImageMagick).
+  Before building, confirm the Drive folder opens without login (owner was asked to check it). Deliver the video file path + a short
+  report, then STOP.
+- Also pending from the owner (handle when they report): APK installs and opens → tick §6b item 6;
+  phone-check fixes (ship JS fixes as an EAS Update, see §3 item 4); TEST_PLAN.md run → tick
+  Phase 3 item 8; cross-fade feedback → tick §6a item 8.
+- After the video, a plain GO with nothing pending = propose Phase 5 (rollout + one week of real use
+  + fix round; keep data current: Eid holidays, Feb 1 Panganiban proclamation, promo end, Talisay
+  hall pin) as a STEP 1 report.
 - "commit and push" = commit to `main` and `git push`.
 
 ## 5. Working notes (gotchas)

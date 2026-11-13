@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native';
 import { amountToInput } from '@/lib/transactions';
 import { toCentavos } from '@/lib/money';
 import { useTheme } from '@/theme';
@@ -51,7 +51,8 @@ export function AmountPrompt({ visible, title, message, initial = 0, confirmLabe
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      {/* 'padding' on Android too: with edge-to-edge the window no longer resizes for the keyboard. */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <Pressable accessibilityLabel="Close" onPress={onCancel} style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', padding: spacing.xl }}>
           <Pressable onPress={() => {}} style={{ backgroundColor: colors.background, borderRadius: radius.lg, padding: spacing.lg, gap: spacing.md }}>
             <AppText variant="heading">{title}</AppText>

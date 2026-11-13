@@ -109,6 +109,8 @@ export const routes = sqliteTable('routes', {
   name: text('name').notNull(),
   isDefault: bool('is_default').notNull().default(false),
   minutes: integer('minutes'),
+  /** The intern's usual trip on this route: drives the fare shown and the one-tap log default. */
+  trip: text('trip', { enum: ['round', 'one_way'] }).notNull().default('round'),
   ...timestamps,
 });
 

@@ -8,7 +8,7 @@ import { db } from '@/db/client';
 import { transactions, wallets, type Region } from '@/db/schema';
 import { useDbQuery } from '@/db/useDbQuery';
 import { todayManila } from '@/lib/dates';
-import { legFare } from '@/lib/route';
+import { legFare, tripTimes, type TripType } from '@/lib/route';
 import { featuresFor } from '@/lib/region';
 import { beepLow, isBeepMode, walletBalanceOf } from '@/lib/wallet';
 import { getDefaultRoute } from '../commute/queries';
@@ -55,22 +55,25 @@ export function topUpBeep(userId: number, beep: Wallet, amount: number): number 
     .get().id;
 }
 
-/** Beep fare of the daily route, round trip (0 if the route has no train/Carousel legs). */
-export function beepRoundTrip(region: Region, isStudent: boolean): number {
+/**
+ * Beep fare of the daily route: one way, and per usual trip (round trip = ×2, one way = ×1).
+ * Zeros if the route has no train/Carousel legs.
+ */
+export function beepDailyFare(region: Region, isStudent: boolean): { oneWay: number; perTrip: number; trip: TripType } {
   const route = getDefaultRoute(region);
-  if (!route || route.needsUpdate) return 0;
+  if (!route || route.needsUpdate) return { oneWay: 0, perTrip: 0, trip: 'round' };
   const oneWay = route.legs.filter((l) => isBeepMode(l.rule.mode)).reduce((s, l) => s + legFare(l.rule, l, isStudent).payable, 0);
-  return oneWay * 2;
+  return { oneWay, perTrip: oneWay * tripTimes(route.trip), trip: route.trip };
 }
 
 export function getBeepState() {
   const p = getProfile();
   if (!p || !featuresFor(p.user.region).trains) return undefined;
+  const fare = beepDailyFare(p.user.region, p.user.isStudent);
   const beep = getBeep();
-  if (!beep) return { beep: undefined, balance: 0, roundTrip: beepRoundTrip(p.user.region, p.user.isStudent), low: false };
+  if (!beep) return { beep: undefined, balance: 0, ...fare, low: false };
   const balance = walletBalance(beep);
-  const roundTrip = beepRoundTrip(p.user.region, p.user.isStudent);
-  return { beep, balance, roundTrip, low: beepLow(balance, roundTrip) };
+  return { beep, balance, ...fare, low: beepLow(balance, fare.perTrip) };
 }
 
 export function useBeepState() {
