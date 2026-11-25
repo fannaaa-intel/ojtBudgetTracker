@@ -8,3 +8,8 @@ expo-env.d.ts
 ios/
 android/
 coverage/
+
+# tutorial video: screenshots and renders stay local
+marketing/video/shots/
+marketing/video/out/
+__pycache__/

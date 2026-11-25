@@ -1,0 +1,104 @@
+{
+  "voice": "en-US-EmmaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "drive_link_hint": "Link in the group chat",
+  "scenes": [
+    {
+      "kind": "hook",
+      "caption": "Where did your allowance go?",
+      "vo": "OJT life, right? Fare, food, load... and your allowance is gone before Friday."
+    },
+    {
+      "kind": "brand",
+      "caption": "OJT Budget",
+      "pills": ["Free", "Offline", "No account"],
+      "vo": "Meet OJT Budget. It's free, it works offline, and your data stays on your phone."
+    },
+    {
+      "kind": "shot", "shot": "01.png", "tag": "SETUP",
+      "caption": "Tap Get started",
+      "tap": [538, 2098],
+      "vo": "Download it from the link, then tap Get started."
+    },
+    {
+      "kind": "shot", "shot": "02.png", "tag": "SETUP",
+      "caption": "Your name and school",
+      "tap": [538, 797],
+      "vo": "Add your name and school. No sign-up needed."
+    },
+    {
+      "kind": "shot", "shot": "03.png", "tag": "SETUP",
+      "caption": "Pick your agency",
+      "tap": [538, 854],
+      "vo": "Pick your agency, so your fares match your area."
+    },
+    {
+      "kind": "shot", "shot": "04.png", "tag": "SETUP",
+      "caption": "Where do you live?",
+      "tap": [538, 1367],
+      "vo": "Living at home, renting, or in a dorm? It handles all three."
+    },
+    {
+      "kind": "shot", "shot": "05.png", "tag": "SETUP",
+      "caption": "Your OJT schedule",
+      "tap": [538, 2174],
+      "vo": "Set your schedule: start date, hours per day, and required hours."
+    },
+    {
+      "kind": "shot", "shot": "06.png", "tag": "COMMUTE",
+      "caption": "Save your route",
+      "tap": [679, 1942],
+      "vo": "In Commute, save your route to the office, one ride at a time."
+    },
+    {
+      "kind": "shot", "shot": "07.png", "tag": "COMMUTE",
+      "caption": "Fares, auto-computed",
+      "callout": [0, 1990, 1080, 2090],
+      "vo": "Your fare is computed for you. One way and round trip, right away."
+    },
+    {
+      "kind": "shot", "shot": "08.png", "tag": "COMMUTE",
+      "caption": "Ready every day",
+      "tap": [538, 638],
+      "vo": "Saved. Your daily route is ready to log."
+    },
+    {
+      "kind": "shot", "shot": "09.png", "tag": "MEALS & FARES",
+      "caption": "One tap to log",
+      "tap": [690, 735],
+      "vo": "Hit the plus button. Meals and fares take just one tap."
+    },
+    {
+      "kind": "shot", "shot": "10.png", "tag": "MEALS & FARES",
+      "caption": "Undo anytime",
+      "tap": [933, 2018],
+      "callout": [30, 1940, 1050, 2090],
+      "vo": "Logged instantly. Made a mistake? Just hit Undo."
+    },
+    {
+      "kind": "shot", "shot": "11.png", "tag": "BUDGET",
+      "caption": "Set a budget",
+      "tap": [848, 479],
+      "vo": "Set a budget, like a thousand pesos for food each week."
+    },
+    {
+      "kind": "shot", "shot": "12.png", "tag": "BUDGET",
+      "caption": "Safe to spend today",
+      "callout": [40, 410, 1040, 1070],
+      "vo": "Your Home screen shows exactly how much is safe to spend today."
+    },
+    {
+      "kind": "shot", "shot": "13.png", "tag": "UPDATES",
+      "caption": "Updates, 8 PM to 12 AM",
+      "tap": [538, 1784],
+      "vo": "For updates, open the app between 8 PM and midnight, then tap Restart."
+    },
+    {
+      "kind": "end",
+      "caption": "Download now",
+      "pills": ["Android", "Offline", "Free"],
+      "vo": "Download it now from the link in the group chat. Your OJT, minus the money stress."
+    }
+  ]
+}
