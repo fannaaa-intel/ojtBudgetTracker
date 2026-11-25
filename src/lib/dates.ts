@@ -110,6 +110,31 @@ export function formatMonthDayYear(d: ISODate): string {
   return `${MONTHS_PH[m - 1]} ${day}, ${y}`;
 }
 
+/** Milliseconds until the next midnight in Asia/Manila (always > 0), so "today" can roll over on time. */
+export function msUntilManilaMidnight(now: Date = new Date()): number {
+  const manila = now.getTime() + 8 * 3_600_000;
+  return DAY_MS - (((manila % DAY_MS) + DAY_MS) % DAY_MS);
+}
+
+/**
+ * Workdays as a short label, Monday first: [1,2,3,4,5] → "Mon–Fri", [1,3,5] → "Mon, Wed, Fri",
+ * [6,0] → "Sat, Sun". A run of 3+ days becomes a range.
+ */
+export function formatWeekdays(days: readonly number[]): string {
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const picked = order.filter((d) => days.includes(d));
+  if (picked.length === 0) return 'No days';
+  const runs: number[][] = [];
+  for (const d of picked) {
+    const last = runs[runs.length - 1];
+    if (last && order.indexOf(d) === order.indexOf(last[last.length - 1]) + 1) last.push(d);
+    else runs.push([d]);
+  }
+  return runs
+    .map((r) => (r.length >= 3 ? `${WEEKDAYS[r[0]]}–${WEEKDAYS[r[r.length - 1]]}` : r.map((d) => WEEKDAYS[d]).join(', ')))
+    .join(', ');
+}
+
 /** Monday of the week containing d (weeks start Monday). */
 export function startOfWeek(d: ISODate): ISODate {
   const wd = weekday(d);

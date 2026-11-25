@@ -48,6 +48,11 @@ export function BudgetEnvelope({ p, last, index = 0 }: { p: BudgetProgress; last
           <AppText variant="caption" tone="secondary">
             {formatPeso(p.spent)} of {formatPeso(p.available)}
           </AppText>
+          {p.days === 'duty' ? (
+            <AppText variant="caption" tone="muted">
+              {p.offDaySpent > 0 ? `Duty days only. ${formatPeso(p.offDaySpent)} on days off, not counted` : 'Duty days only'}
+            </AppText>
+          ) : null}
           {p.carry > 0 ? (
             <AppText variant="caption" tone="muted">
               Includes {formatPeso(p.carry)} carried over

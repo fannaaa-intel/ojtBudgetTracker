@@ -85,6 +85,13 @@
       "when": 1794541570655,
       "tag": "0011_fantastic_the_hood",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1795570236956,
+      "tag": "0012_friendly_vulcan",
+      "breakpoints": true
     }
   ]
 }

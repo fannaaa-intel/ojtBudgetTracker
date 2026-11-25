@@ -1,13 +1,35 @@
 import {
   countWorkdays,
   formatDateLabel,
+  formatWeekdays,
   isoToPickerDate,
   isValidISO,
+  msUntilManilaMidnight,
   pickerDateToISO,
   projectEndDate,
   startOfWeek,
   weekday,
 } from '../src/lib/dates';
+
+describe('msUntilManilaMidnight', () => {
+  it('counts to 00:00 Manila (UTC+8), whatever the phone timezone', () => {
+    // 2026-11-25 23:00 Manila = 15:00 UTC → 1 hour left
+    expect(msUntilManilaMidnight(new Date(Date.UTC(2026, 10, 25, 15, 0, 0)))).toBe(3_600_000);
+    // exactly midnight Manila → a full day until the next one
+    expect(msUntilManilaMidnight(new Date(Date.UTC(2026, 10, 25, 16, 0, 0)))).toBe(86_400_000);
+  });
+});
+
+describe('formatWeekdays', () => {
+  it('Monday first, runs of 3+ as ranges', () => {
+    expect(formatWeekdays([1, 2, 3, 4, 5])).toBe('Mon–Fri');
+    expect(formatWeekdays([5, 4, 3, 2, 1])).toBe('Mon–Fri');
+    expect(formatWeekdays([1, 3, 5])).toBe('Mon, Wed, Fri');
+    expect(formatWeekdays([6, 0])).toBe('Sat, Sun');
+    expect(formatWeekdays([1, 2, 3, 4, 5, 6])).toBe('Mon–Sat');
+    expect(formatWeekdays([])).toBe('No days');
+  });
+});
 import { HOLIDAY_SEED } from '../src/db/seed/holidays';
 import { holidaysFor } from '../src/lib/seedTopUp';
 

@@ -16,7 +16,9 @@ export function TodayCard() {
   const { colors, radius, spacing } = useTheme();
   const day = useDaySummary();
   const { cat } = useLabels();
-  const safe = useSafeToSpend();
+  const info = useSafeToSpend();
+  // A day off under a duty-days budget has no daily limit (weekend spending varies).
+  const safe = info?.kind === 'limit' ? info : undefined;
   const status = safe ? budgetStatus(safe.spentToday, safe.dailyLimit) : 'ok';
   const top = day.byCategory.slice(0, TOP);
 
@@ -51,6 +53,10 @@ export function TodayCard() {
             </View>
           </View>
         </View>
+      ) : info?.kind === 'off_day' ? (
+        <AppText variant="caption" tone="inverse" style={{ opacity: 0.8 }}>
+          Day off, no fixed limit. {formatPeso(Math.abs(info.dutyLeft))} {info.dutyLeft >= 0 ? 'left' : 'over'} of this week’s duty budget.
+        </AppText>
       ) : (
         <AppText variant="caption" tone="inverse" style={{ opacity: 0.8 }}>
           Add a budget to get a daily limit.

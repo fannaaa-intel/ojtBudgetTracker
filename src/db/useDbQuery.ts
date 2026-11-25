@@ -1,6 +1,7 @@
 import { addDatabaseChangeListener } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
+import { msUntilManilaMidnight } from '@/lib/dates';
 
 /**
  * Runs a synchronous Drizzle read (.get()/.all()) and re-runs it whenever any of the
@@ -24,9 +25,19 @@ export function useDbQuery<T>(run: () => T, tables: readonly string[], deps: rea
     const app = AppState.addEventListener('change', (s) => {
       if (s === 'active') setVersion((v) => v + 1);
     });
+    // ...and so does midnight (Asia/Manila) while the app stays open, so Today never shows yesterday.
+    let timer: ReturnType<typeof setTimeout>;
+    const atMidnight = () => {
+      timer = setTimeout(() => {
+        setVersion((v) => v + 1);
+        atMidnight();
+      }, msUntilManilaMidnight() + 1000);
+    };
+    atMidnight();
     return () => {
       sub.remove();
       app.remove();
+      clearTimeout(timer);
     };
   }, [tableKey]);
 

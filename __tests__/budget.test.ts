@@ -1,5 +1,10 @@
 import {
   budgetStatus,
+  countedDays,
+  countsDay,
+  dailyShare,
+  effectiveDays,
+  isDutyDay,
   daysLeftInPeriod,
   daysLeftInWeek,
   periodRange,
@@ -74,5 +79,55 @@ describe('safe to spend today', () => {
     const r = safeToSpendToday(500_00, 600_00, 20_00, '2026-11-12');
     expect(r.dailyLimit).toBe(0);
     expect(r.left).toBe(-20_00);
+  });
+});
+
+describe('duty-day budgets (₱1,000 covers Mon–Fri; weekends vary)', () => {
+  const monFri = { workdays: [1, 2, 3, 4, 5], holidays: new Set<string>() };
+  // Week of Nov 23–29, 2026; Nov 30 (Mon) is Bonifacio Day.
+  const withHoliday = { workdays: [1, 2, 3, 4, 5], holidays: new Set(['2026-11-30']) };
+
+  it('duty days are workdays that are not holidays', () => {
+    expect(isDutyDay('2026-11-23', monFri)).toBe(true); // Mon
+    expect(isDutyDay('2026-11-28', monFri)).toBe(false); // Sat
+    expect(isDutyDay('2026-11-29', monFri)).toBe(false); // Sun
+    expect(isDutyDay('2026-11-30', withHoliday)).toBe(false); // holiday Monday
+    expect(countsDay('all', '2026-11-28', monFri)).toBe(true);
+  });
+
+  it('a week has 5 duty days; a holiday week has 4', () => {
+    expect(countedDays('duty', '2026-11-23', '2026-11-29', monFri)).toEqual(['2026-11-23', '2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27']);
+    expect(countedDays('duty', '2026-11-30', '2026-12-06', withHoliday)).toHaveLength(4);
+    expect(countedDays('all', '2026-11-23', '2026-11-29', monFri)).toHaveLength(7);
+    expect(countedDays('duty', '2026-11-25', '2026-11-24', monFri)).toEqual([]);
+  });
+
+  it('₱1,000 on Monday → ₱200 a day (not ₱142.85 over 7 days)', () => {
+    expect(dailyShare(1000_00, 0, countedDays('duty', '2026-11-23', '2026-11-29', monFri).length)).toBe(200_00);
+  });
+
+  it('Wednesday after ₱450 spent Mon–Tue → ₱550 ÷ 3 duty days = ₱183.33', () => {
+    expect(dailyShare(1000_00, 450_00, countedDays('duty', '2026-11-25', '2026-11-29', monFri).length)).toBe(183_33);
+  });
+
+  it('Friday is the last duty day: the whole remainder is today’s share', () => {
+    expect(dailyShare(1000_00, 820_00, countedDays('duty', '2026-11-27', '2026-11-29', monFri).length)).toBe(180_00);
+  });
+
+  it('never negative; 0 days left → 0', () => {
+    expect(dailyShare(1000_00, 1200_00, 2)).toBe(0);
+    expect(dailyShare(1000_00, 0, 0)).toBe(0);
+  });
+
+  it('only weekly budgets can be duty-only', () => {
+    expect(effectiveDays('weekly', 'duty')).toBe('duty');
+    expect(effectiveDays('monthly', 'duty')).toBe('all');
+    expect(effectiveDays('weekly', 'all')).toBe('all');
+  });
+
+  it('custom schedule: Tue–Sat duty, so Monday and Sunday are off', () => {
+    const tueSat = { workdays: [2, 3, 4, 5, 6], holidays: new Set<string>() };
+    expect(isDutyDay('2026-11-23', tueSat)).toBe(false);
+    expect(isDutyDay('2026-11-28', tueSat)).toBe(true);
   });
 });

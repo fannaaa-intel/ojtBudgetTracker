@@ -8,23 +8,41 @@ import { budgets, categories } from '@/db/schema';
 import { useDbQuery } from '@/db/useDbQuery';
 import {
   budgetStatus,
+  countedDays,
+  countsDay,
+  dailyShare,
+  daysLeftInPeriod,
+  effectiveDays,
   periodRange,
   previousPeriodRange,
   progressPct,
   rolloverCarry,
-  safeToSpendToday,
+  type BudgetDays,
   type BudgetPeriod,
   type BudgetStatus,
   type DateRange,
-  type SafeToSpend,
+  type DutySchedule,
 } from '@/lib/budget';
 import { addDays, todayManila, type ISODate } from '@/lib/dates';
-import { categoryFamilyIds, sumAmount } from '../transactions/queries';
+import { parseWorkdays } from '@/lib/ojt';
+import { getHolidayMap } from '../ojt/queries';
+import { getProfile } from '../profile/queries';
+import { categoryFamilyIds, sumAmount, sumAmountOnDates } from '../transactions/queries';
 
 export type BudgetRow = typeof budgets.$inferSelect;
-export type BudgetInput = { categoryId: number | null; period: BudgetPeriod; limitAmount: number; rollover: boolean };
+export type BudgetInput = { categoryId: number | null; period: BudgetPeriod; limitAmount: number; rollover: boolean; days: BudgetDays };
 
-export const BUDGET_TABLES = ['budgets', 'transactions', 'categories'] as const;
+/** Duty days come from the OJT schedule and holidays, so those tables are watched too. */
+export const BUDGET_TABLES = ['budgets', 'transactions', 'categories', 'ojt_profile', 'holidays', 'users'] as const;
+
+/** The intern's duty days: OJT workdays (default Mon–Fri) minus their region's holidays. */
+export function getDutySchedule(): DutySchedule {
+  const p = getProfile();
+  return {
+    workdays: p ? parseWorkdays(p.profile.workdays) : [1, 2, 3, 4, 5],
+    holidays: new Set(getHolidayMap(p?.user.region ?? null).keys()),
+  };
+}
 
 export function getBudget(id: number): BudgetRow | undefined {
   return db.select().from(budgets).where(eq(budgets.id, id)).get();
@@ -41,8 +59,9 @@ export function findDuplicateBudget(input: Pick<BudgetInput, 'categoryId' | 'per
 }
 
 export function saveBudget(userId: number, id: number | undefined, input: BudgetInput): number {
-  if (id == null) return db.insert(budgets).values({ userId, ...input }).returning({ id: budgets.id }).get().id;
-  db.update(budgets).set(input).where(eq(budgets.id, id)).run();
+  const row = { ...input, days: effectiveDays(input.period, input.days) };
+  if (id == null) return db.insert(budgets).values({ userId, ...row }).returning({ id: budgets.id }).get().id;
+  db.update(budgets).set(row).where(eq(budgets.id, id)).run();
   return id;
 }
 
@@ -57,9 +76,16 @@ export type BudgetProgress = {
   name: string;
   categoryKey: string | null;
   range: DateRange;
+  /** 'duty' = only duty-day spending counts (weekly budgets); 'all' = every day. */
+  days: BudgetDays;
+  /** Category ids it counts (undefined = all spending). */
+  ids: number[] | undefined;
   carry: number;
   available: number;
+  /** Spending on the days this budget counts. */
   spent: number;
+  /** Duty-day budgets: spending this period on weekends / days off (not counted). 0 otherwise. */
+  offDaySpent: number;
   left: number;
   status: BudgetStatus;
   pct: number;
@@ -69,7 +95,13 @@ function spendIn(range: DateRange, categoryIds: number[] | undefined): number {
   return sumAmount('expense', range.from, range.to, categoryIds);
 }
 
-export function listBudgetProgress(today: ISODate = todayManila()): BudgetProgress[] {
+/** Spending in a range on the days a budget counts. */
+function spendCounted(days: BudgetDays, range: DateRange, ids: number[] | undefined, s: DutySchedule): number {
+  if (range.from > range.to) return 0;
+  return days === 'all' ? spendIn(range, ids) : sumAmountOnDates('expense', countedDays(days, range.from, range.to, s), ids);
+}
+
+export function listBudgetProgress(today: ISODate = todayManila(), schedule: DutySchedule = getDutySchedule()): BudgetProgress[] {
   const rows = db
     .select({ budget: budgets, name: categories.name, key: categories.key, sort: categories.sort })
     .from(budgets)
@@ -79,19 +111,26 @@ export function listBudgetProgress(today: ISODate = todayManila()): BudgetProgre
 
   return rows.map(({ budget, name, key }) => {
     const ids = budget.categoryId == null ? undefined : categoryFamilyIds(budget.categoryId);
-    const range = periodRange(budget.period === 'monthly' ? 'monthly' : 'weekly', today);
-    const prev = previousPeriodRange(budget.period === 'monthly' ? 'monthly' : 'weekly', today);
-    const carry = rolloverCarry(budget.rollover, budget.limitAmount, spendIn(prev, ids));
+    const period: BudgetPeriod = budget.period === 'monthly' ? 'monthly' : 'weekly';
+    const days = effectiveDays(period, budget.days);
+    const range = periodRange(period, today);
+    const prev = previousPeriodRange(period, today);
+    // Rollover: last period's leftover on the days it counted (duty days for a duty budget).
+    const carry = rolloverCarry(budget.rollover, budget.limitAmount, spendCounted(days, prev, ids, schedule));
     const available = budget.limitAmount + carry;
-    const spent = spendIn(range, ids);
+    const spent = spendCounted(days, range, ids, schedule);
+    const offDaySpent = days === 'duty' ? spendIn(range, ids) - spent : 0;
     return {
       budget,
       name: name ?? 'All spending',
       categoryKey: key ?? null,
       range,
+      days,
+      ids,
       carry,
       available,
       spent,
+      offDaySpent,
       left: available - spent,
       status: budgetStatus(spent, available),
       pct: progressPct(spent, available),
@@ -103,25 +142,85 @@ export function useBudgetProgress() {
   return useDbQuery(() => listBudgetProgress(), BUDGET_TABLES);
 }
 
+export type SafeToSpendInfo =
+  | {
+      kind: 'limit';
+      period: BudgetPeriod;
+      /** 'duty' = duty days left this week; 'week' / 'month' = calendar days left. */
+      daysLabel: 'duty' | 'week' | 'month';
+      dailyLimit: number;
+      spentToday: number;
+      left: number;
+      daysLeft: number;
+      available: number;
+    }
+  | {
+      /** Today is a weekend / day off and every budget in play covers duty days only: no fixed limit. */
+      kind: 'off_day';
+      spentToday: number;
+      /** This week's spending on days off (weekends, holidays) in those budgets. */
+      offDaySpent: number;
+      /** What is left of the duty-day budget this week (negative = over). */
+      dutyLeft: number;
+    };
+
+const idsOf = (ps: BudgetProgress[]): number[] | undefined =>
+  ps.some((p) => p.ids === undefined) ? undefined : [...new Set(ps.flatMap((p) => p.ids!))];
+
 /**
  * Safe to spend today. Uses weekly budgets when any exist, otherwise monthly ones.
  * Within that period: the overall ("All spending") budget if there is one, otherwise the
- * sum of the category envelopes. undefined = no budget at all yet.
+ * category envelopes. Only envelopes that count today are used (a duty-day budget is skipped on a
+ * weekend). Envelopes with the same days are pooled, so overspending one lowers the shared limit.
+ * undefined = no budget at all yet.
  */
-export function getSafeToSpend(today: ISODate = todayManila()): (SafeToSpend & { available: number }) | undefined {
-  const all = listBudgetProgress(today);
+export function getSafeToSpend(today: ISODate = todayManila(), schedule: DutySchedule = getDutySchedule()): SafeToSpendInfo | undefined {
+  const all = listBudgetProgress(today, schedule);
   const weekly = all.filter((p) => p.budget.period === 'weekly');
   const period: BudgetPeriod = weekly.length > 0 ? 'weekly' : 'monthly';
   const inPeriod = weekly.length > 0 ? weekly : all.filter((p) => p.budget.period === 'monthly');
   if (inPeriod.length === 0) return undefined;
   const overall = inPeriod.find((p) => p.budget.categoryId == null);
   const envelopes = overall ? [overall] : inPeriod;
-  const available = envelopes.reduce((s, p) => s + p.available, 0);
-  const ids = overall ? undefined : envelopes.flatMap((p) => categoryFamilyIds(p.budget.categoryId!));
-  const start = envelopes[0].range.from;
-  const spentBefore = today > start ? spendIn({ from: start, to: addDays(today, -1) }, ids) : 0;
-  const spentToday = spendIn({ from: today, to: today }, ids);
-  return { ...safeToSpendToday(available, spentBefore, spentToday, today, period), available };
+  const todayOnly = { from: today, to: today };
+
+  const active = envelopes.filter((p) => countsDay(p.days, today, schedule));
+  if (active.length === 0) {
+    return {
+      kind: 'off_day',
+      spentToday: spendIn(todayOnly, idsOf(envelopes)),
+      offDaySpent: envelopes.reduce((s, p) => s + p.offDaySpent, 0),
+      dutyLeft: envelopes.reduce((s, p) => s + p.left, 0),
+    };
+  }
+
+  let dailyLimit = 0;
+  let available = 0;
+  let dutyDaysLeft = 0;
+  for (const days of ['all', 'duty'] as const) {
+    const group = active.filter((p) => p.days === days);
+    if (group.length === 0) continue;
+    const { from, to } = group[0].range;
+    const ids = idsOf(group);
+    const groupAvailable = group.reduce((s, p) => s + p.available, 0);
+    const spentBefore = spendCounted(days, { from, to: addDays(today, -1) }, ids, schedule);
+    const daysLeft = countedDays(days, today, to, schedule).length;
+    if (days === 'duty') dutyDaysLeft = daysLeft;
+    dailyLimit += dailyShare(groupAvailable, spentBefore, daysLeft);
+    available += groupAvailable;
+  }
+  const spentToday = spendIn(todayOnly, idsOf(active));
+  const onlyDuty = active.every((p) => p.days === 'duty');
+  return {
+    kind: 'limit',
+    period,
+    daysLabel: onlyDuty ? 'duty' : period === 'weekly' ? 'week' : 'month',
+    dailyLimit,
+    spentToday,
+    left: dailyLimit - spentToday,
+    daysLeft: onlyDuty ? dutyDaysLeft : daysLeftInPeriod(period, today),
+    available,
+  };
 }
 
 export function useSafeToSpend() {

@@ -192,6 +192,11 @@ export const budgets = sqliteTable('budgets', {
   period: text('period', { enum: ['daily', 'weekly', 'monthly'] }).notNull(),
   limitAmount: integer('limit_amount').notNull(),
   rollover: bool('rollover').notNull().default(false),
+  /**
+   * Weekly only. 'duty' = the limit covers the intern's duty days (ojt_profile.workdays, holidays
+   * excluded); spending on weekends / days off varies and is not counted against it. 'all' = every day.
+   */
+  days: text('days', { enum: ['all', 'duty'] }).notNull().default('all'),
   ...timestamps,
 });
 

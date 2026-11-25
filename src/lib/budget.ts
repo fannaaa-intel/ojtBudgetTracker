@@ -7,11 +7,47 @@
  * Safe to spend today = (week budget + carry − spent before today) ÷ days left in the week (incl. today).
  * With no weekly budget, the monthly budget is used the same way over the days left in the month.
  * Spending before today is used (not today's), so the daily limit stays put while you spend today.
+ *
+ * Duty-day budgets (weekly, owner decision Nov 25, 2026): the limit (e.g. ₱1,000) covers only the
+ * intern's duty days — their OJT workdays, holidays excluded. Weekends and days off "always vary":
+ * that spending is tracked but not counted against the limit, and those days get no daily limit.
+ * The daily limit on a duty day = (limit + carry − duty-day spending before today) ÷ duty days left.
  */
-import { addDays, startOfWeek, weekday, type ISODate } from './dates';
+import { addDays, parseISO, startOfWeek, weekday, type ISODate } from './dates';
 import { daysInMonth } from './paySchedule';
 
 export type BudgetPeriod = 'weekly' | 'monthly';
+/** Which days a budget counts: every day, or duty days only (weekly budgets). */
+export type BudgetDays = 'all' | 'duty';
+/** The intern's duty schedule: weekdays worked (0 = Sunday) and holidays (never duty days). */
+export type DutySchedule = { workdays: readonly number[]; holidays: ReadonlySet<ISODate> };
+
+/** Monthly budgets always count every day; only weekly ones can be duty-days-only. */
+export function effectiveDays(period: BudgetPeriod, days: BudgetDays): BudgetDays {
+  return period === 'weekly' && days === 'duty' ? 'duty' : 'all';
+}
+
+export function isDutyDay(d: ISODate, s: DutySchedule): boolean {
+  return s.workdays.includes(weekday(d)) && !s.holidays.has(d);
+}
+
+/** True when a budget with these days counts spending on d. */
+export function countsDay(days: BudgetDays, d: ISODate, s: DutySchedule): boolean {
+  return days === 'all' || isDutyDay(d, s);
+}
+
+/** The days in [from, to] (inclusive) a budget counts. Empty when from > to. */
+export function countedDays(days: BudgetDays, from: ISODate, to: ISODate, s: DutySchedule): ISODate[] {
+  const out: ISODate[] = [];
+  for (let d = from; parseISO(d) <= parseISO(to); d = addDays(d, 1)) if (countsDay(days, d, s)) out.push(d);
+  return out;
+}
+
+/** (available − spent before today) ÷ counted days left (incl. today), floored to the centavo, never negative. */
+export function dailyShare(available: number, spentBefore: number, daysLeft: number): number {
+  if (daysLeft <= 0) return 0;
+  return Math.max(0, Math.floor((available - spentBefore) / daysLeft));
+}
 export type BudgetStatus = 'ok' | 'near' | 'over';
 export type DateRange = { from: ISODate; to: ISODate };
 
@@ -71,7 +107,7 @@ export function safeToSpendToday(
   period: BudgetPeriod = 'weekly',
 ): SafeToSpend {
   const daysLeft = daysLeftInPeriod(period, today);
-  const dailyLimit = Math.max(0, Math.floor((available - spentBeforeToday) / daysLeft));
+  const dailyLimit = dailyShare(available, spentBeforeToday, daysLeft);
   return { dailyLimit, spentToday, left: dailyLimit - spentToday, daysLeft, period };
 }
 

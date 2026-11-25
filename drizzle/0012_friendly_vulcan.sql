@@ -1,0 +1,1 @@
+ALTER TABLE `budgets` ADD `days` text DEFAULT 'all' NOT NULL;

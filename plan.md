@@ -15,6 +15,7 @@ Last updated: 2026-11-12 · Spec doc: "OJT Budget Tracker – Final Features & R
 | Regions | `NCR` (Metro Manila) for 3 agencies; `REGION_V` (Bicol) for LGU Talisay only |
 | Group features | Ambagan, group gala, shared Christmas party/exchange gift: **Metro Manila interns only**. Hidden when the user's region ≠ the barkada's region (Talisay intern = solo gala). |
 | OJT schedule | Start Nov 9, 2026 · 5 hours/day · Mon–Fri · editable per user |
+| Weekly budget (Nov 25, 2026) | The user sets their own weekly amount (e.g. ₱1,000) for **duty days** (their OJT workdays, holidays excluded). Weekends / days off "always vary": tracked, not counted, no daily limit. Per budget: "Duty days only" (default) or "Every day" (default for Gala). |
 | Platform | React Native via **Expo** (Expo Router), Android first |
 | Database | **SQLite on device** (expo-sqlite) + **Drizzle ORM**. No server, no account, no internet. |
 | Money | **Integer centavos** everywhere (₱14.00 = `1400`). Format only at display. |
@@ -146,7 +147,7 @@ Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the
 - [x] Agency pins saved (looked up Nov 13 at owner's request; `encodePlusCode` added + tested): ITC Bldg 14.5626, 121.0231 (Waze, building-level) · LANDBANK Plaza 14.5726, 120.9829 (Structurae, building-level) · LGU Talisay 14.1371, 122.9256 (PhilAtlas, town centre — hall is in Poblacion, within a few hundred m) · save lat/lng + derived Plus Codes · test each lies inside its city
 - [x] Savings withdrawals ("Take out" → transfer back to Cash, never spending, ≤ saved) + tests — no schema change (`to_wallet_id` set = out of the goal)
 - [x] Accessibility pass: big text styles capped (display/amountLarge 1.3×, title 1.4×, label 1.6×; body unlimited) · rows read as one sentence with status · row actions for TalkBack (Essentials "Bought") · headers marked · chart rows spoken — **owner to check on the phone (largest font + TalkBack)**
-- [ ] Shareable preview APK via EAS — **setup done Nov 13**: project @sersi07/ojt-budget-tracker linked (`app.json` owner + projectId), `eas.json` preview = APK, `expo-notifications` plugin + white `assets/notification-icon.png`, version 0.2.0 / versionCode 2, `expo-font` added (needed outside Expo Go), SDK patch fixes, `expo-doctor` 20/20. **Waiting: owner runs `npx eas-cli build -p android --profile preview` and installs the APK** (tick when it installs and opens)
+- [x] Shareable preview APK via EAS — project @sersi07/ojt-budget-tracker linked (`app.json` owner + projectId), `eas.json` preview = APK, `expo-notifications` plugin + white `assets/notification-icon.png`, `expo-font` added (needed outside Expo Go), `expo-doctor` 20/20. **Build 4 (versionCode 4) installed and running on the owner's phone** — confirmed Nov 13 from the tutorial screenshots (Usual trip chips present). APK lives in the owner's Google Drive folder.
 
 - [x] App updates (added Nov 13 at owner's request, **before the first APK**): `expo-updates` / EAS Update, channel `preview`, runtime = app version. Auto check only 8 PM–12 AM Manila when the app is open (max every 30 min) → downloads → "Update ready · Restart" snackbar; Settings → Check for updates any time. CLAUDE.md rule 4 now allows this one exception.
 
@@ -154,6 +155,12 @@ Owner accepted the recommendations (Nov 13): OJT cost rows move from Home to the
 Normally shipped as app updates (EAS Update). The two below went into a **fresh APK (versionCode 4)** at the owner's request instead.
 - [x] Nov 13: **Usual trip per route** — Round trip (default) or One way, chosen in the route editor (`routes.trip`, migration 0011). Commute tab shows that fare + a chip; the Add tab's one-tap log starts on it (the other can still be picked); Beep "trips left" follows it. Compare routes stays round trip.
 - [x] Nov 13: **Keyboard never covers inputs (whole app)** — `Screen` wraps content in a KeyboardAvoidingView (padding, offset measured from the window; Android is edge-to-edge so the window no longer resizes) and scrolls the focused field into view on keyboard show, on layout shrink and on focus (`TextField` → `useRevealFocusedInput`). AmountPrompt uses padding on Android too.
+
+- [x] Nov 25: **Duty-day weekly budgets** (`budgets.days` 'all' | 'duty', migration 0012, existing budgets stay 'all' until edited). Budget editor → "Covers: Duty days only (Mon–Fri) / Every day". Daily limit on a duty day = (limit + carry − duty-day spending before today) ÷ duty days left; on a weekend/holiday the Budget and Home cards show "Day off, no fixed limit" + days-off spending + what's left of the duty budget. Envelopes show "Duty days only" + off-day spending. Logic in `src/lib/budget.ts` (tested), queries in `src/features/budgets/queries.ts`.
+- [x] Nov 25: **Fix: "today" went stale** when the app stayed open past midnight (Today card, daily limit, commute "logged today"). `useDbQuery` now also re-reads at Manila midnight (`msUntilManilaMidnight`, tested).
+
+### Tutorial video for the co-interns (Nov 13)
+- [x] Built from the owner's screenshots (dark mode, 13 shots): `marketing/video/` → `out/ojt-budget-tutorial.mp4`. Owner's changes on the day: **English voice-over + English captions** (female, en-US Emma neural via `edge-tts`, cheerful; first try was Taglish fil-PH Blessica — owner: "sounds tired", "english please"), **original lo-fi music** (generated by `make_music.py`, ducked under the voice), **motion graphics, not slides** (kinetic captions, floating phone, tap ripples, zoom callouts, ₱ particles, logo pulse rings), **no dashes / divider lines**. End card QR = owner's Drive folder link (`?usp=sharing`). Edit lines/captions in `scenes.json`, rebuild with `build-video.ps1`.
 
 Owner answers (Nov 13): scope 1–6 in order · holidays as above · Expo account later · custom agency stays not allowed (recommended).
 Not now: multiple Beep cards, DB-level test harness, custom agency, promo end (already a switch).

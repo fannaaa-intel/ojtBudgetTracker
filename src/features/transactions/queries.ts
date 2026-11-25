@@ -156,6 +156,24 @@ export function sumAmount(kind: TxKind, from: string, to: string, categoryIds?: 
   return Number(row?.total ?? 0);
 }
 
+/** Like sumAmount, but only on the given days (e.g. a week's duty days). */
+export function sumAmountOnDates(kind: TxKind, dates: readonly string[], categoryIds?: number[]): number {
+  if (dates.length === 0 || (categoryIds && categoryIds.length === 0)) return 0;
+  const row = db
+    .select({ total: sql<number>`coalesce(sum(${transactions.amount}), 0)` })
+    .from(transactions)
+    .where(
+      and(
+        notDeleted(),
+        eq(transactions.kind, kind),
+        inArray(transactions.date, [...dates]),
+        categoryIds ? inArray(transactions.categoryId, categoryIds) : undefined,
+      ),
+    )
+    .get();
+  return Number(row?.total ?? 0);
+}
+
 /** Sum of non-deleted one-time expenses (OJT requirements etc.) in [from, to]. */
 export function sumOneTime(from: string, to: string): number {
   const row = db
